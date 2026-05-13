@@ -1,0 +1,53 @@
+{
+  "name": "n8n-nodes-weclapp",
+  "version": "0.1.0",
+  "description": "n8n community node for the Weclapp ERP/CRM platform",
+  "keywords": [
+    "n8n-community-node-package",
+    "weclapp",
+    "erp",
+    "crm"
+  ],
+  "author": {
+    "name": "Muhammad Otah Bashi",
+    "email": "muhammad.otahbashi@altruan.de"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "eslint . --ext .ts",
+    "test": "jest --passWithNoTests"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/WeclappApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/Weclapp/Weclapp.node.js",
+      "dist/nodes/Weclapp/WeclappTrigger.node.js"
+    ]
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^14.14.37",
+    "eslint": "^10.0.3",
+    "globals": "^17.4.0",
+    "jest": "^29.7.0",
+    "n8n-workflow": "^1.0.0",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.57.0"
+  },
+  "dependencies": {
+    "sqlite3": "^6.0.1"
+  }
+}
