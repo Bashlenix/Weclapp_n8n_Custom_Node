@@ -7,6 +7,8 @@ import {
 	INodeType,
 	INodeTypeDescription,
 	NodeOperationError,
+	ResourceMapperFields,
+	ResourceMapperValue,
 } from 'n8n-workflow';
 
 import { weclappRequest } from './transport/request';
@@ -19,6 +21,7 @@ import {
 } from './descriptions/shared';
 import { partyCreateUpdateFields } from './descriptions/party';
 import * as loadOptionsMethods from './methods/loadOptions';
+import { buildWeclappCustomAttributes, getCustomAttributesForParty } from './methods/customAttributes';
 
 function parseCustomQuery(raw: string): IDataObject {
 	const params: IDataObject = {};
@@ -64,6 +67,9 @@ export class Weclapp implements INodeType {
 
 	methods = {
 		loadOptions: loadOptionsMethods as Record<string, (this: ILoadOptionsFunctions) => Promise<INodePropertyOptions[]>>,
+		resourceMapping: {
+			getCustomAttributesForParty: getCustomAttributesForParty as (this: ILoadOptionsFunctions) => Promise<ResourceMapperFields>,
+		},
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
@@ -112,6 +118,11 @@ export class Weclapp implements INodeType {
 				// ── Create ─────────────────────────────────────────────────────────────
 				} else if (operation === 'create') {
 					const body = this.getNodeParameter('createFields', i, {}) as IDataObject;
+					if (resource === 'party') {
+						const customAttrsRMV = this.getNodeParameter('customAttributes', i, null) as ResourceMapperValue | null;
+						const customAttrs = buildWeclappCustomAttributes(customAttrsRMV ?? { value: null });
+						if (customAttrs.length > 0) body.customAttributes = customAttrs;
+					}
 					const result = await weclappRequest(this, 'POST', `/${resource}`, body, {
 						ignoreMissingProperties: true,
 					});
@@ -121,6 +132,11 @@ export class Weclapp implements INodeType {
 				} else if (operation === 'update') {
 					const id = this.getNodeParameter('id', i) as string;
 					const body = this.getNodeParameter('updateFields', i, {}) as IDataObject;
+					if (resource === 'party') {
+						const customAttrsRMV = this.getNodeParameter('customAttributes', i, null) as ResourceMapperValue | null;
+						const customAttrs = buildWeclappCustomAttributes(customAttrsRMV ?? { value: null });
+						if (customAttrs.length > 0) body.customAttributes = customAttrs;
+					}
 					const result = await weclappRequest(
 						this, 'PUT', `/${resource}/id/${encodeURIComponent(id)}`, body,
 						{ ignoreMissingProperties: true },

@@ -323,6 +323,29 @@ function buildOptions(ignored: Set<string>): INodeProperties[] {
 	return ALL_PARTY_OPTIONS.filter(opt => !ignored.has(opt.name as string));
 }
 
+const customAttributesField: INodeProperties = {
+	displayName: 'Custom Attributes',
+	name: 'customAttributes',
+	type: 'resourceMapper',
+	default: { mappingMode: 'defineBelow', value: null },
+	noDataExpression: true,
+	displayOptions: {
+		show: {
+			resource: ['party'],
+			operation: ['create', 'update'],
+		},
+	},
+	typeOptions: {
+		resourceMapper: {
+			resourceMapperMethod: 'getCustomAttributesForParty',
+			mode: 'add',
+			fieldWords: { singular: 'Custom Attribute', plural: 'Custom Attributes' },
+			addAllFields: false,
+			noFieldsError: 'No custom attributes found for the Party entity.',
+		},
+	},
+};
+
 export const partyCreateUpdateFields: INodeProperties[] = [
 	{
 		displayName: 'Fields',
@@ -352,4 +375,5 @@ export const partyCreateUpdateFields: INodeProperties[] = [
 		},
 		options: buildOptions(IGNORED_UPDATE),
 	},
+	customAttributesField,
 ];
