@@ -1,7 +1,9 @@
 import {
 	IDataObject,
 	IExecuteFunctions,
+	ILoadOptionsFunctions,
 	INodeExecutionData,
+	INodePropertyOptions,
 	INodeType,
 	INodeTypeDescription,
 	NodeOperationError,
@@ -16,6 +18,7 @@ import {
 	searchFields,
 } from './descriptions/shared';
 import { partyCreateUpdateFields } from './descriptions/party';
+import * as loadOptionsMethods from './methods/loadOptions';
 
 function parseCustomQuery(raw: string): IDataObject {
 	const params: IDataObject = {};
@@ -57,6 +60,10 @@ export class Weclapp implements INodeType {
 			...searchFields,
 			...partyCreateUpdateFields,
 		],
+	};
+
+	methods = {
+		loadOptions: loadOptionsMethods as Record<string, (this: ILoadOptionsFunctions) => Promise<INodePropertyOptions[]>>,
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
