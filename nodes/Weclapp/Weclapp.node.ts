@@ -36,9 +36,22 @@ import {
 	purchaseOrderCreateUpdateFields,
 	shipmentCreateUpdateFields,
 } from './descriptions/purchaseEntities';
+import {
+	articleCategoryCreateUpdateFields,
+	articleCreateUpdateFields,
+	commentCreateUpdateFields,
+	entitySearchFilterFields,
+	OTHER_ENTITY_DATE_FIELDS,
+	OTHER_ENTITY_RESOURCES,
+} from './descriptions/remainingEntities';
 import * as loadOptionsMethods from './methods/loadOptions';
 import {
 	buildWeclappCustomAttributes,
+	getCustomAttributesForAccountingTransaction,
+	getCustomAttributesForArticle,
+	getCustomAttributesForArticleCategory,
+	getCustomAttributesForComment,
+	getCustomAttributesForDocument,
 	getCustomAttributesForIncomingGoods,
 	getCustomAttributesForParty,
 	getCustomAttributesForPurchaseInvoice,
@@ -51,7 +64,11 @@ import {
 } from './methods/customAttributes';
 
 function convertDateFieldsToMs(body: IDataObject, resource: string): void {
-	const fields = SALES_ENTITY_DATE_FIELDS[resource] ?? PURCHASE_ENTITY_DATE_FIELDS[resource] ?? [];
+	const fields =
+		SALES_ENTITY_DATE_FIELDS[resource] ??
+		PURCHASE_ENTITY_DATE_FIELDS[resource] ??
+		OTHER_ENTITY_DATE_FIELDS[resource] ??
+		[];
 	for (const field of fields) {
 		const val = body[field];
 		if (typeof val === 'string' && val) {
@@ -99,6 +116,7 @@ export class Weclapp implements INodeType {
 			operationOptions,
 			...getByIdFields,
 			...searchFields,
+			...entitySearchFilterFields,
 			...partyCreateUpdateFields,
 			...salesOrderCreateUpdateFields,
 			...salesInvoiceCreateUpdateFields,
@@ -108,6 +126,9 @@ export class Weclapp implements INodeType {
 			...purchaseInvoiceCreateUpdateFields,
 			...incomingGoodsCreateUpdateFields,
 			...shipmentCreateUpdateFields,
+			...articleCreateUpdateFields,
+			...articleCategoryCreateUpdateFields,
+			...commentCreateUpdateFields,
 		],
 	};
 
@@ -123,6 +144,11 @@ export class Weclapp implements INodeType {
 			getCustomAttributesForPurchaseInvoice: getCustomAttributesForPurchaseInvoice as (this: ILoadOptionsFunctions) => Promise<ResourceMapperFields>,
 			getCustomAttributesForIncomingGoods: getCustomAttributesForIncomingGoods as (this: ILoadOptionsFunctions) => Promise<ResourceMapperFields>,
 			getCustomAttributesForShipment: getCustomAttributesForShipment as (this: ILoadOptionsFunctions) => Promise<ResourceMapperFields>,
+			getCustomAttributesForArticle: getCustomAttributesForArticle as (this: ILoadOptionsFunctions) => Promise<ResourceMapperFields>,
+			getCustomAttributesForArticleCategory: getCustomAttributesForArticleCategory as (this: ILoadOptionsFunctions) => Promise<ResourceMapperFields>,
+			getCustomAttributesForComment: getCustomAttributesForComment as (this: ILoadOptionsFunctions) => Promise<ResourceMapperFields>,
+			getCustomAttributesForDocument: getCustomAttributesForDocument as (this: ILoadOptionsFunctions) => Promise<ResourceMapperFields>,
+			getCustomAttributesForAccountingTransaction: getCustomAttributesForAccountingTransaction as (this: ILoadOptionsFunctions) => Promise<ResourceMapperFields>,
 		},
 	};
 
@@ -163,6 +189,14 @@ export class Weclapp implements INodeType {
 						...(customQuery ? parseCustomQuery(customQuery) : {}),
 					};
 
+					// comment and document require entityName + entityId as search params
+					if (resource === 'comment' || resource === 'document') {
+						const entityName = this.getNodeParameter('entityName', i, '') as string;
+						const entityId = this.getNodeParameter('entityId', i, '') as string;
+						if (entityName) qs.entityName = entityName;
+						if (entityId) qs.entityId = entityId;
+					}
+
 					const result = await weclappRequest(this, 'GET', `/${resource}`, undefined, qs);
 					const records = ((result as IDataObject)?.result as IDataObject[]) ?? [];
 
@@ -173,7 +207,12 @@ export class Weclapp implements INodeType {
 				// ── Create ─────────────────────────────────────────────────────────────
 				} else if (operation === 'create') {
 					const body = this.getNodeParameter('createFields', i, {}) as IDataObject;
-					if (resource === 'party' || SALES_ENTITY_RESOURCES.includes(resource) || PURCHASE_ENTITY_RESOURCES.includes(resource)) {
+					if (
+						resource === 'party' ||
+						SALES_ENTITY_RESOURCES.includes(resource) ||
+						PURCHASE_ENTITY_RESOURCES.includes(resource) ||
+						OTHER_ENTITY_RESOURCES.includes(resource)
+					) {
 						const customAttrsRMV = this.getNodeParameter('customAttributes', i, null) as ResourceMapperValue | null;
 						const customAttrs = buildWeclappCustomAttributes(customAttrsRMV ?? { value: null });
 						if (customAttrs.length > 0) body.customAttributes = customAttrs;
@@ -189,7 +228,12 @@ export class Weclapp implements INodeType {
 					const id = this.getNodeParameter('id', i) as string;
 					if (!id) throw new NodeOperationError(this.getNode(), 'Record ID is required for the Update operation.', { itemIndex: i });
 					const body = this.getNodeParameter('updateFields', i, {}) as IDataObject;
-					if (resource === 'party' || SALES_ENTITY_RESOURCES.includes(resource) || PURCHASE_ENTITY_RESOURCES.includes(resource)) {
+					if (
+						resource === 'party' ||
+						SALES_ENTITY_RESOURCES.includes(resource) ||
+						PURCHASE_ENTITY_RESOURCES.includes(resource) ||
+						OTHER_ENTITY_RESOURCES.includes(resource)
+					) {
 						const customAttrsRMV = this.getNodeParameter('customAttributes', i, null) as ResourceMapperValue | null;
 						const customAttrs = buildWeclappCustomAttributes(customAttrsRMV ?? { value: null });
 						if (customAttrs.length > 0) body.customAttributes = customAttrs;

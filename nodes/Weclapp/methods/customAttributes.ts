@@ -230,6 +230,41 @@ export async function getCustomAttributesForShipment(
 	return { fields: attrs.map(attributeDefinitionToResourceField) };
 }
 
+export async function getCustomAttributesForArticle(
+	this: ILoadOptionsFunctions,
+): Promise<ResourceMapperFields> {
+	const attrs = await getCustomAttributesForEntity(this, 'article');
+	return { fields: attrs.map(attributeDefinitionToResourceField) };
+}
+
+export async function getCustomAttributesForArticleCategory(
+	this: ILoadOptionsFunctions,
+): Promise<ResourceMapperFields> {
+	const attrs = await getCustomAttributesForEntity(this, 'articleCategory');
+	return { fields: attrs.map(attributeDefinitionToResourceField) };
+}
+
+export async function getCustomAttributesForComment(
+	this: ILoadOptionsFunctions,
+): Promise<ResourceMapperFields> {
+	const attrs = await getCustomAttributesForEntity(this, 'comment');
+	return { fields: attrs.map(attributeDefinitionToResourceField) };
+}
+
+export async function getCustomAttributesForDocument(
+	this: ILoadOptionsFunctions,
+): Promise<ResourceMapperFields> {
+	const attrs = await getCustomAttributesForEntity(this, 'document');
+	return { fields: attrs.map(attributeDefinitionToResourceField) };
+}
+
+export async function getCustomAttributesForAccountingTransaction(
+	this: ILoadOptionsFunctions,
+): Promise<ResourceMapperFields> {
+	const attrs = await getCustomAttributesForEntity(this, 'accountingTransaction');
+	return { fields: attrs.map(attributeDefinitionToResourceField) };
+}
+
 /**
  * Converts a resourceMapper value (from getNodeParameter) into the Weclapp customAttributes
  * array format expected by POST /party and PUT /party/id/{id}.
