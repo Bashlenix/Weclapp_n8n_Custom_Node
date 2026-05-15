@@ -5,9 +5,161 @@ import {
 	INodeTypeDescription,
 	IWebhookFunctions,
 	IWebhookResponseData,
+	NodeHint,
 } from 'n8n-workflow';
 
 import { weclappRequest } from './transport/request';
+
+const HINT_PREFIX =
+	'No data yet — <a href="https://docs.n8n.io/workflows/executions/debug/" target="_blank">pin a test payload</a> '
+	+ 'on this node to enable field autocompletion in downstream nodes (IF, Switch, Set, etc.).<br/>';
+
+function fieldHint(resource: string, label: string, fields: string): NodeHint {
+	return {
+		message: HINT_PREFIX + `<strong>${label} fields:</strong> ${fields}`,
+		type: 'info',
+		location: 'outputPane',
+		whenToDisplay: 'beforeExecution',
+		displayCondition: `={{ $parameter.resource === "${resource}" }}`,
+	};
+}
+
+function fc(name: string): string {
+	return `<code>${name}</code>`;
+}
+
+const ENTITY_HINTS: NodeHint[] = [
+	fieldHint(
+		'accountingTransaction',
+		'Accounting Transaction',
+		[
+			fc('id'), fc('bookingDate'), fc('bookingText'), fc('bookingType'),
+			fc('amount'), fc('costCenterId'), fc('createdDate'), fc('lastModifiedDate'),
+		].join(', '),
+	),
+	fieldHint(
+		'article',
+		'Article',
+		[
+			fc('id'), fc('articleNumber'), fc('name'), fc('articleType'), fc('active'),
+			fc('taxRateType'), fc('articleCategoryId'), fc('manufacturerId'),
+			fc('launchDate'), fc('sellFromDate'), fc('sellByDate'), fc('supportUntilDate'),
+			fc('createdDate'), fc('lastModifiedDate'), fc('version'),
+		].join(', '),
+	),
+	fieldHint(
+		'articleCategory',
+		'Article Category',
+		[
+			fc('id'), fc('name'), fc('description'), fc('parentCategoryId'),
+			fc('createdDate'), fc('lastModifiedDate'),
+		].join(', '),
+	),
+	fieldHint(
+		'comment',
+		'Comment',
+		[
+			fc('id'), fc('entityName'), fc('entityId'), fc('comment'), fc('htmlComment'),
+			fc('privateComment'), fc('publicComment'), fc('solution'), fc('parentCommentId'),
+			fc('createdDate'), fc('lastModifiedDate'),
+		].join(', '),
+	),
+	fieldHint(
+		'document',
+		'Document',
+		[
+			fc('id'), fc('entityName'), fc('entityId'), fc('fileName'), fc('title'),
+			fc('documentType'), fc('mimeType'), fc('createdDate'), fc('lastModifiedDate'),
+		].join(', '),
+	),
+	fieldHint(
+		'incomingGoods',
+		'Incoming Goods',
+		[
+			fc('id'), fc('incomingGoodsNumber'), fc('incomingGoodsType'), fc('status'),
+			fc('senderPartyId'), fc('deliveryNoteNumber'), fc('warehouseId'),
+			fc('responsibleUserId'), fc('createdDate'), fc('lastModifiedDate'), fc('version'),
+		].join(', '),
+	),
+	fieldHint(
+		'party',
+		'Party',
+		[
+			fc('id'), fc('partyNumber'), fc('partyType'), fc('company'), fc('firstName'), fc('lastName'),
+			fc('customerNumber'), fc('supplierNumber'), fc('customer'), fc('supplier'),
+			fc('leadStatus'), fc('responsibleUserId'), fc('createdDate'), fc('lastModifiedDate'), fc('version'),
+		].join(', '),
+	),
+	fieldHint(
+		'purchaseInvoice',
+		'Purchase Invoice',
+		[
+			fc('id'), fc('invoiceNumber'), fc('supplierId'), fc('status'), fc('purchaseInvoiceType'),
+			fc('invoiceDate'), fc('dueDate'), fc('paymentStatus'),
+			fc('responsibleUserId'), fc('createdDate'), fc('lastModifiedDate'), fc('version'),
+		].join(', '),
+	),
+	fieldHint(
+		'purchaseOrder',
+		'Purchase Order',
+		[
+			fc('id'), fc('purchaseOrderNumber'), fc('supplierId'), fc('status'), fc('purchaseOrderType'),
+			fc('orderDate'), fc('plannedDeliveryDate'), fc('warehouseId'),
+			fc('responsibleUserId'), fc('createdDate'), fc('lastModifiedDate'), fc('version'),
+		].join(', '),
+	),
+	fieldHint(
+		'quotation',
+		'Quotation',
+		[
+			fc('id'), fc('quotationNumber'), fc('customerId'), fc('status'), fc('quotationType'),
+			fc('quotationDate'), fc('expectedSignatureDate'), fc('validFrom'), fc('validTo'),
+			fc('responsibleUserId'), fc('createdDate'), fc('lastModifiedDate'), fc('version'),
+		].join(', '),
+	),
+	fieldHint(
+		'salesInvoice',
+		'Sales Invoice',
+		[
+			fc('id'), fc('invoiceNumber'), fc('customerId'), fc('status'), fc('salesInvoiceType'),
+			fc('invoiceDate'), fc('dueDate'), fc('paymentStatus'),
+			fc('responsibleUserId'), fc('createdDate'), fc('lastModifiedDate'), fc('version'),
+		].join(', '),
+	),
+	fieldHint(
+		'salesOpenItem',
+		'Sales Open Item',
+		[
+			fc('id'), fc('openItemNumber'), fc('openItemType'), fc('customerId'),
+			fc('amount'), fc('amountDiscount'), fc('dueDate'), fc('paymentStatus'), fc('cleared'),
+			fc('createdDate'), fc('lastModifiedDate'),
+		].join(', '),
+	),
+	fieldHint(
+		'salesOrder',
+		'Sales Order',
+		[
+			fc('id'), fc('orderNumber'), fc('orderNumberAtCustomer'), fc('customerId'),
+			fc('status'), fc('orderDate'), fc('plannedDeliveryDate'), fc('deliveryDate'),
+			fc('salesChannel'), fc('warehouseId'), fc('responsibleUserId'),
+			fc('createdDate'), fc('lastModifiedDate'), fc('version'),
+		].join(', '),
+	),
+	fieldHint(
+		'shipment',
+		'Shipment',
+		[
+			fc('id'), fc('shipmentNumber'), fc('status'),
+			fc('createdDate'), fc('lastModifiedDate'), fc('deliveryDate'),
+			fc('warehouseId'), fc('shipmentMethodId'),
+			fc('shippingCarrierId'), fc('shippingReturnCarrierId'),
+			fc('recipientPartyId'), fc('mainSalesOrderId'),
+			fc('packageTrackingNumber'), fc('packageReturnTrackingNumber'),
+			fc('declaredValueAmount'), fc('responsibleUserId'),
+			fc('description'), fc('recordComment'), fc('version'),
+		].join(', '),
+	),
+];
 
 export class WeclappTrigger implements INodeType {
 	description: INodeTypeDescription = {
@@ -36,26 +188,7 @@ export class WeclappTrigger implements INodeType {
 				path: 'webhook',
 			},
 		],
-		hints: [
-			{
-				message:
-					'No data yet — <a href="https://docs.n8n.io/workflows/executions/debug/" target="_blank">pin a test payload</a> '
-					+ 'on this node to enable field autocompletion in downstream nodes (IF, Switch, Set, etc.).<br/>'
-					+ '<strong>Shipment fields:</strong> '
-					+ '<code>id</code>, <code>shipmentNumber</code>, <code>status</code>, '
-					+ '<code>createdDate</code>, <code>lastModifiedDate</code>, '
-					+ '<code>deliveryDate</code>, <code>warehouseId</code>, <code>shipmentMethodId</code>, '
-					+ '<code>shippingCarrierId</code>, <code>shippingReturnCarrierId</code>, '
-					+ '<code>recipientPartyId</code>, <code>mainSalesOrderId</code>, '
-					+ '<code>packageTrackingNumber</code>, <code>packageReturnTrackingNumber</code>, '
-					+ '<code>declaredValueAmount</code>, <code>responsibleUserId</code>, '
-					+ '<code>description</code>, <code>recordComment</code>, <code>version</code>',
-				type: 'info',
-				location: 'outputPane',
-				whenToDisplay: 'beforeExecution',
-				displayCondition: '={{ $parameter.resource === "shipment" }}',
-			},
-		],
+		hints: ENTITY_HINTS,
 		properties: [
 			{
 				displayName: 'Resource',
