@@ -202,6 +202,34 @@ export async function getCustomAttributesForQuotation(
 	return { fields: attrs.map(attributeDefinitionToResourceField) };
 }
 
+export async function getCustomAttributesForPurchaseOrder(
+	this: ILoadOptionsFunctions,
+): Promise<ResourceMapperFields> {
+	const attrs = await getCustomAttributesForEntity(this, 'purchaseOrder');
+	return { fields: attrs.map(attributeDefinitionToResourceField) };
+}
+
+export async function getCustomAttributesForPurchaseInvoice(
+	this: ILoadOptionsFunctions,
+): Promise<ResourceMapperFields> {
+	const attrs = await getCustomAttributesForEntity(this, 'purchaseInvoice');
+	return { fields: attrs.map(attributeDefinitionToResourceField) };
+}
+
+export async function getCustomAttributesForIncomingGoods(
+	this: ILoadOptionsFunctions,
+): Promise<ResourceMapperFields> {
+	const attrs = await getCustomAttributesForEntity(this, 'incomingGoods');
+	return { fields: attrs.map(attributeDefinitionToResourceField) };
+}
+
+export async function getCustomAttributesForShipment(
+	this: ILoadOptionsFunctions,
+): Promise<ResourceMapperFields> {
+	const attrs = await getCustomAttributesForEntity(this, 'shipment');
+	return { fields: attrs.map(attributeDefinitionToResourceField) };
+}
+
 /**
  * Converts a resourceMapper value (from getNodeParameter) into the Weclapp customAttributes
  * array format expected by POST /party and PUT /party/id/{id}.

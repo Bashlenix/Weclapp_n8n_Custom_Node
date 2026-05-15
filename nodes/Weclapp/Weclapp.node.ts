@@ -28,18 +28,30 @@ import {
 	salesOpenItemCreateUpdateFields,
 	salesOrderCreateUpdateFields,
 } from './descriptions/salesEntities';
+import {
+	incomingGoodsCreateUpdateFields,
+	PURCHASE_ENTITY_DATE_FIELDS,
+	PURCHASE_ENTITY_RESOURCES,
+	purchaseInvoiceCreateUpdateFields,
+	purchaseOrderCreateUpdateFields,
+	shipmentCreateUpdateFields,
+} from './descriptions/purchaseEntities';
 import * as loadOptionsMethods from './methods/loadOptions';
 import {
 	buildWeclappCustomAttributes,
+	getCustomAttributesForIncomingGoods,
 	getCustomAttributesForParty,
+	getCustomAttributesForPurchaseInvoice,
+	getCustomAttributesForPurchaseOrder,
 	getCustomAttributesForQuotation,
 	getCustomAttributesForSalesInvoice,
 	getCustomAttributesForSalesOpenItem,
 	getCustomAttributesForSalesOrder,
+	getCustomAttributesForShipment,
 } from './methods/customAttributes';
 
 function convertDateFieldsToMs(body: IDataObject, resource: string): void {
-	const fields = SALES_ENTITY_DATE_FIELDS[resource] ?? [];
+	const fields = SALES_ENTITY_DATE_FIELDS[resource] ?? PURCHASE_ENTITY_DATE_FIELDS[resource] ?? [];
 	for (const field of fields) {
 		const val = body[field];
 		if (typeof val === 'string' && val) {
@@ -92,6 +104,10 @@ export class Weclapp implements INodeType {
 			...salesInvoiceCreateUpdateFields,
 			...salesOpenItemCreateUpdateFields,
 			...quotationCreateUpdateFields,
+			...purchaseOrderCreateUpdateFields,
+			...purchaseInvoiceCreateUpdateFields,
+			...incomingGoodsCreateUpdateFields,
+			...shipmentCreateUpdateFields,
 		],
 	};
 
@@ -103,6 +119,10 @@ export class Weclapp implements INodeType {
 			getCustomAttributesForSalesInvoice: getCustomAttributesForSalesInvoice as (this: ILoadOptionsFunctions) => Promise<ResourceMapperFields>,
 			getCustomAttributesForSalesOpenItem: getCustomAttributesForSalesOpenItem as (this: ILoadOptionsFunctions) => Promise<ResourceMapperFields>,
 			getCustomAttributesForQuotation: getCustomAttributesForQuotation as (this: ILoadOptionsFunctions) => Promise<ResourceMapperFields>,
+			getCustomAttributesForPurchaseOrder: getCustomAttributesForPurchaseOrder as (this: ILoadOptionsFunctions) => Promise<ResourceMapperFields>,
+			getCustomAttributesForPurchaseInvoice: getCustomAttributesForPurchaseInvoice as (this: ILoadOptionsFunctions) => Promise<ResourceMapperFields>,
+			getCustomAttributesForIncomingGoods: getCustomAttributesForIncomingGoods as (this: ILoadOptionsFunctions) => Promise<ResourceMapperFields>,
+			getCustomAttributesForShipment: getCustomAttributesForShipment as (this: ILoadOptionsFunctions) => Promise<ResourceMapperFields>,
 		},
 	};
 
@@ -153,7 +173,7 @@ export class Weclapp implements INodeType {
 				// ── Create ─────────────────────────────────────────────────────────────
 				} else if (operation === 'create') {
 					const body = this.getNodeParameter('createFields', i, {}) as IDataObject;
-					if (resource === 'party' || SALES_ENTITY_RESOURCES.includes(resource)) {
+					if (resource === 'party' || SALES_ENTITY_RESOURCES.includes(resource) || PURCHASE_ENTITY_RESOURCES.includes(resource)) {
 						const customAttrsRMV = this.getNodeParameter('customAttributes', i, null) as ResourceMapperValue | null;
 						const customAttrs = buildWeclappCustomAttributes(customAttrsRMV ?? { value: null });
 						if (customAttrs.length > 0) body.customAttributes = customAttrs;
@@ -169,7 +189,7 @@ export class Weclapp implements INodeType {
 					const id = this.getNodeParameter('id', i) as string;
 					if (!id) throw new NodeOperationError(this.getNode(), 'Record ID is required for the Update operation.', { itemIndex: i });
 					const body = this.getNodeParameter('updateFields', i, {}) as IDataObject;
-					if (resource === 'party' || SALES_ENTITY_RESOURCES.includes(resource)) {
+					if (resource === 'party' || SALES_ENTITY_RESOURCES.includes(resource) || PURCHASE_ENTITY_RESOURCES.includes(resource)) {
 						const customAttrsRMV = this.getNodeParameter('customAttributes', i, null) as ResourceMapperValue | null;
 						const customAttrs = buildWeclappCustomAttributes(customAttrsRMV ?? { value: null });
 						if (customAttrs.length > 0) body.customAttributes = customAttrs;
