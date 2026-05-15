@@ -36,6 +36,26 @@ export class WeclappTrigger implements INodeType {
 				path: 'webhook',
 			},
 		],
+		hints: [
+			{
+				message:
+					'No data yet — <a href="https://docs.n8n.io/workflows/executions/debug/" target="_blank">pin a test payload</a> '
+					+ 'on this node to enable field autocompletion in downstream nodes (IF, Switch, Set, etc.).<br/>'
+					+ '<strong>Shipment fields:</strong> '
+					+ '<code>id</code>, <code>shipmentNumber</code>, <code>status</code>, '
+					+ '<code>createdDate</code>, <code>lastModifiedDate</code>, '
+					+ '<code>deliveryDate</code>, <code>warehouseId</code>, <code>shipmentMethodId</code>, '
+					+ '<code>shippingCarrierId</code>, <code>shippingReturnCarrierId</code>, '
+					+ '<code>recipientPartyId</code>, <code>mainSalesOrderId</code>, '
+					+ '<code>packageTrackingNumber</code>, <code>packageReturnTrackingNumber</code>, '
+					+ '<code>declaredValueAmount</code>, <code>responsibleUserId</code>, '
+					+ '<code>description</code>, <code>recordComment</code>, <code>version</code>',
+				type: 'info',
+				location: 'outputPane',
+				whenToDisplay: 'beforeExecution',
+				displayCondition: '={{ $parameter.resource === "shipment" }}',
+			},
+		],
 		properties: [
 			{
 				displayName: 'Resource',
