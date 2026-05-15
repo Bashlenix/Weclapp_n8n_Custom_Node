@@ -174,6 +174,34 @@ export async function getCustomAttributesForParty(
 	return { fields: attrs.map(attributeDefinitionToResourceField) };
 }
 
+export async function getCustomAttributesForSalesOrder(
+	this: ILoadOptionsFunctions,
+): Promise<ResourceMapperFields> {
+	const attrs = await getCustomAttributesForEntity(this, 'salesOrder');
+	return { fields: attrs.map(attributeDefinitionToResourceField) };
+}
+
+export async function getCustomAttributesForSalesInvoice(
+	this: ILoadOptionsFunctions,
+): Promise<ResourceMapperFields> {
+	const attrs = await getCustomAttributesForEntity(this, 'salesInvoice');
+	return { fields: attrs.map(attributeDefinitionToResourceField) };
+}
+
+export async function getCustomAttributesForSalesOpenItem(
+	this: ILoadOptionsFunctions,
+): Promise<ResourceMapperFields> {
+	const attrs = await getCustomAttributesForEntity(this, 'salesOpenItem');
+	return { fields: attrs.map(attributeDefinitionToResourceField) };
+}
+
+export async function getCustomAttributesForQuotation(
+	this: ILoadOptionsFunctions,
+): Promise<ResourceMapperFields> {
+	const attrs = await getCustomAttributesForEntity(this, 'quotation');
+	return { fields: attrs.map(attributeDefinitionToResourceField) };
+}
+
 /**
  * Converts a resourceMapper value (from getNodeParameter) into the Weclapp customAttributes
  * array format expected by POST /party and PUT /party/id/{id}.

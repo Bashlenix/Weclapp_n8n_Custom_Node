@@ -64,7 +64,6 @@ export const getByIdFields: INodeProperties[] = [
 		displayName: 'Record ID',
 		name: 'id',
 		type: 'string',
-		required: true,
 		default: '',
 		displayOptions: {
 			show: {
