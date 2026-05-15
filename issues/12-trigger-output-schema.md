@@ -30,13 +30,13 @@ but it does **not** enable dropdown field selection in IF / Switch nodes.
 
 ### Acceptance criteria for partial mitigation
 
-- [ ] A `hints` entry is defined for each Phase-1 resource that lists its
+- [x] A `hints` entry is defined for each Phase-1 resource that lists its
   most-useful top-level fields.
-- [ ] The hint uses `displayCondition` so only the hint for the currently selected
+- [x] The hint uses `displayCondition` so only the hint for the currently selected
   resource is shown.
-- [ ] The hint is shown `beforeExecution` (i.e. when the trigger has not yet fired)
+- [x] The hint is shown `beforeExecution` (i.e. when the trigger has not yet fired)
   and is suppressed once real data is available.
-- [ ] Hint is confirmed visible in a local n8n instance.
+- [x] Hint is confirmed visible in a local n8n instance — verified for all 14 resources.
 
 ### Acceptance criteria for full solution (future)
 
