@@ -21,11 +21,12 @@ export const resourceOptions: INodeProperties = {
 		{ name: 'Sales Open Item', value: 'salesOpenItem' },
 		{ name: 'Sales Order', value: 'salesOrder' },
 		{ name: 'Shipment', value: 'shipment' },
+		{ name: 'Warehouse Stock Movement', value: 'warehouseStockMovement' },
 	],
 };
 
 // Read-only resources that do not support Create or Update
-export const READ_ONLY_RESOURCES = ['document', 'accountingTransaction'];
+export const READ_ONLY_RESOURCES = ['document', 'accountingTransaction', 'warehouseStockMovement'];
 
 export const operationOptions: INodeProperties = {
 	displayName: 'Operation',
