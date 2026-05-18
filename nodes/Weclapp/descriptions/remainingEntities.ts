@@ -357,24 +357,6 @@ export const commentCreateUpdateFields: INodeProperties[] = [
 	buildCustomAttributesField('comment'),
 ];
 
-// ─── Document download fields ─────────────────────────────────────────────────
-
-export const documentDownloadVersionFields: INodeProperties[] = [
-	{
-		displayName: 'Version ID',
-		name: 'versionId',
-		type: 'string',
-		default: '',
-		displayOptions: {
-			show: {
-				resource: ['document'],
-				operation: ['downloadDocumentVersion'],
-			},
-		},
-		description: 'ID of the specific document version to download. Leave empty to download the latest version.',
-	},
-];
-
 // ─── Comment / Document mandatory search filters ──────────────────────────────
 // These fields are injected into the search query string for comment and document.
 

@@ -40,7 +40,6 @@ import {
 	articleCategoryCreateUpdateFields,
 	articleCreateUpdateFields,
 	commentCreateUpdateFields,
-	documentDownloadVersionFields,
 	entitySearchFilterFields,
 	OTHER_ENTITY_DATE_FIELDS,
 	OTHER_ENTITY_RESOURCES,
@@ -133,7 +132,6 @@ export class Weclapp implements INodeType {
 			...articleCategoryCreateUpdateFields,
 			...commentCreateUpdateFields,
 			...userCreateUpdateFields,
-			...documentDownloadVersionFields,
 		],
 	};
 
@@ -251,22 +249,19 @@ export class Weclapp implements INodeType {
 					);
 					returnData.push({ json: result ?? {}, pairedItem: { item: i } });
 
-				// ── Download Document Version ──────────────────────────────────────────
-				} else if (operation === 'downloadDocumentVersion') {
+				// ── Download Document ──────────────────────────────────────────────────
+				} else if (operation === 'downloadDocument') {
 					if (resource !== 'document') {
 						throw new NodeOperationError(
 							this.getNode(),
-							`The "downloadDocumentVersion" operation is only supported for the "document" resource.`,
+							`The "downloadDocument" operation is only supported for the "document" resource.`,
 							{ itemIndex: i },
 						);
 					}
 					const id = this.getNodeParameter('id', i) as string;
-					if (!id) throw new NodeOperationError(this.getNode(), 'Record ID is required for the Download Document Version operation.', { itemIndex: i });
-					const versionId = this.getNodeParameter('versionId', i, '') as string;
-					const qs: IDataObject = {};
-					if (versionId) qs.versionId = versionId;
+					if (!id) throw new NodeOperationError(this.getNode(), 'Record ID is required for the Download Document operation.', { itemIndex: i });
 
-					const binary = await weclappBinaryRequest(this, `/document/id/${encodeURIComponent(id)}/downloadDocumentVersion`, qs);
+					const binary = await weclappBinaryRequest(this, `/document/id/${encodeURIComponent(id)}/download`);
 					if (!binary) {
 						returnData.push({ json: { error: 'Document not found' }, pairedItem: { item: i } });
 						continue;
