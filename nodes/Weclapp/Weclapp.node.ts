@@ -11,7 +11,7 @@ import {
 	ResourceMapperValue,
 } from 'n8n-workflow';
 
-import { weclappRequest } from './transport/request';
+import { weclappBinaryRequest, weclappRequest } from './transport/request';
 import {
 	getByIdFields,
 	operationOptions,
@@ -40,6 +40,7 @@ import {
 	articleCategoryCreateUpdateFields,
 	articleCreateUpdateFields,
 	commentCreateUpdateFields,
+	documentDownloadVersionFields,
 	entitySearchFilterFields,
 	OTHER_ENTITY_DATE_FIELDS,
 	OTHER_ENTITY_RESOURCES,
@@ -132,6 +133,7 @@ export class Weclapp implements INodeType {
 			...articleCategoryCreateUpdateFields,
 			...commentCreateUpdateFields,
 			...userCreateUpdateFields,
+			...documentDownloadVersionFields,
 		],
 	};
 
@@ -248,6 +250,37 @@ export class Weclapp implements INodeType {
 						{ ignoreMissingProperties: true },
 					);
 					returnData.push({ json: result ?? {}, pairedItem: { item: i } });
+
+				// ── Download Document Version ──────────────────────────────────────────
+				} else if (operation === 'downloadDocumentVersion') {
+					if (resource !== 'document') {
+						throw new NodeOperationError(
+							this.getNode(),
+							`The "downloadDocumentVersion" operation is only supported for the "document" resource.`,
+							{ itemIndex: i },
+						);
+					}
+					const id = this.getNodeParameter('id', i) as string;
+					if (!id) throw new NodeOperationError(this.getNode(), 'Record ID is required for the Download Document Version operation.', { itemIndex: i });
+					const versionId = this.getNodeParameter('versionId', i, '') as string;
+					const qs: IDataObject = {};
+					if (versionId) qs.versionId = versionId;
+
+					const binary = await weclappBinaryRequest(this, `/document/id/${encodeURIComponent(id)}/downloadDocumentVersion`, qs);
+					if (!binary) {
+						returnData.push({ json: { error: 'Document not found' }, pairedItem: { item: i } });
+						continue;
+					}
+
+					const fileNameMatch = binary.contentDisposition.match(/filename[^;=\n]*=\s*(["']?)([^"'\n;]*)\1/);
+					const fileName = fileNameMatch?.[2]?.trim() || `document-${id}`;
+
+					const binaryData = await this.helpers.prepareBinaryData(binary.buffer, fileName, binary.contentType);
+					returnData.push({
+						json: { documentId: id, fileName, mimeType: binary.contentType },
+						binary: { data: binaryData },
+						pairedItem: { item: i },
+					});
 
 				} else {
 					throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`, {

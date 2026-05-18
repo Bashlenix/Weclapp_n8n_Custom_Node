@@ -42,6 +42,11 @@ export const operationOptions: INodeProperties = {
 			action: 'Create a record',
 		},
 		{
+			name: 'Download Document Version',
+			value: 'downloadDocumentVersion',
+			action: 'Download a document version as binary (document resource only)',
+		},
+		{
 			name: 'Get by ID',
 			value: 'getById',
 			action: 'Get a record by ID',
@@ -69,7 +74,7 @@ export const getByIdFields: INodeProperties[] = [
 		default: '',
 		displayOptions: {
 			show: {
-				operation: ['getById', 'update'],
+				operation: ['getById', 'update', 'downloadDocumentVersion'],
 			},
 		},
 		description: 'The Weclapp internal ID of the record',
