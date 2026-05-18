@@ -406,12 +406,78 @@ export const entitySearchFilterFields: INodeProperties[] = [
 	},
 ];
 
+// ─── User ─────────────────────────────────────────────────────────────────────
+// Create requires: email, status
+// Skipped: imageId, username (readOnly), licenses, userRoles (filterable: false / complex)
+
+const ALL_USER_OPTIONS: INodeProperties[] = [
+	{
+		displayName: 'Email',
+		name: 'email',
+		type: 'string',
+		default: '',
+		description: 'Required on create.',
+	},
+	{
+		displayName: 'Status',
+		name: 'status',
+		type: 'options',
+		default: 'ACTIVE',
+		description: 'Required on create.',
+		options: [
+			{ name: 'Active', value: 'ACTIVE' },
+			{ name: 'Departure', value: 'DEPARTURE' },
+			{ name: 'Not Active', value: 'NOT_ACTIVE' },
+		],
+	},
+	{ displayName: 'First Name', name: 'firstName', type: 'string', default: '' },
+	{ displayName: 'Last Name', name: 'lastName', type: 'string', default: '' },
+	{ displayName: 'Title', name: 'title', type: 'string', default: '' },
+	{ displayName: 'Phone Number', name: 'phoneNumber', type: 'string', default: '' },
+	{ displayName: 'Mobile Phone Number', name: 'mobilePhoneNumber', type: 'string', default: '' },
+	{ displayName: 'Fax Number', name: 'faxNumber', type: 'string', default: '' },
+	{ displayName: 'Birth Date', name: 'birthDate', type: 'dateTime', default: '' },
+];
+
+export const userCreateUpdateFields: INodeProperties[] = [
+	{
+		displayName: 'Fields',
+		name: 'createFields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: ['user'],
+				operation: ['create'],
+			},
+		},
+		options: ALL_USER_OPTIONS,
+	},
+	{
+		displayName: 'Fields to Update',
+		name: 'updateFields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: ['user'],
+				operation: ['update'],
+			},
+		},
+		options: ALL_USER_OPTIONS,
+	},
+	buildCustomAttributesField('user'),
+];
+
 // ─── Date fields for epoch-ms conversion ─────────────────────────────────────
 
 export const OTHER_ENTITY_DATE_FIELDS: Record<string, string[]> = {
 	article: ['launchDate', 'sellByDate', 'sellFromDate', 'supportUntilDate'],
 	articleCategory: [],
 	comment: [],
+	user: ['birthDate'],
 };
 
 export const OTHER_ENTITY_RESOURCES = Object.keys(OTHER_ENTITY_DATE_FIELDS);

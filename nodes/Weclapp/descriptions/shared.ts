@@ -21,6 +21,7 @@ export const resourceOptions: INodeProperties = {
 		{ name: 'Sales Open Item', value: 'salesOpenItem' },
 		{ name: 'Sales Order', value: 'salesOrder' },
 		{ name: 'Shipment', value: 'shipment' },
+		{ name: 'User', value: 'user' },
 		{ name: 'Warehouse Stock Movement', value: 'warehouseStockMovement' },
 	],
 };

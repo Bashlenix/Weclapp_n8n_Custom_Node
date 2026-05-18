@@ -265,6 +265,13 @@ export async function getCustomAttributesForAccountingTransaction(
 	return { fields: attrs.map(attributeDefinitionToResourceField) };
 }
 
+export async function getCustomAttributesForUser(
+	this: ILoadOptionsFunctions,
+): Promise<ResourceMapperFields> {
+	const attrs = await getCustomAttributesForEntity(this, 'user');
+	return { fields: attrs.map(attributeDefinitionToResourceField) };
+}
+
 /**
  * Converts a resourceMapper value (from getNodeParameter) into the Weclapp customAttributes
  * array format expected by POST /party and PUT /party/id/{id}.

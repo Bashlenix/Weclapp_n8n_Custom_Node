@@ -43,6 +43,7 @@ import {
 	entitySearchFilterFields,
 	OTHER_ENTITY_DATE_FIELDS,
 	OTHER_ENTITY_RESOURCES,
+	userCreateUpdateFields,
 } from './descriptions/remainingEntities';
 import * as loadOptionsMethods from './methods/loadOptions';
 import {
@@ -61,6 +62,7 @@ import {
 	getCustomAttributesForSalesOpenItem,
 	getCustomAttributesForSalesOrder,
 	getCustomAttributesForShipment,
+	getCustomAttributesForUser,
 } from './methods/customAttributes';
 
 function convertDateFieldsToMs(body: IDataObject, resource: string): void {
@@ -129,6 +131,7 @@ export class Weclapp implements INodeType {
 			...articleCreateUpdateFields,
 			...articleCategoryCreateUpdateFields,
 			...commentCreateUpdateFields,
+			...userCreateUpdateFields,
 		],
 	};
 
@@ -149,6 +152,7 @@ export class Weclapp implements INodeType {
 			getCustomAttributesForComment: getCustomAttributesForComment as (this: ILoadOptionsFunctions) => Promise<ResourceMapperFields>,
 			getCustomAttributesForDocument: getCustomAttributesForDocument as (this: ILoadOptionsFunctions) => Promise<ResourceMapperFields>,
 			getCustomAttributesForAccountingTransaction: getCustomAttributesForAccountingTransaction as (this: ILoadOptionsFunctions) => Promise<ResourceMapperFields>,
+			getCustomAttributesForUser: getCustomAttributesForUser as (this: ILoadOptionsFunctions) => Promise<ResourceMapperFields>,
 		},
 	};
 
