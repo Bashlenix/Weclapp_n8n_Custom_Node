@@ -72,6 +72,30 @@ export async function weclappRequest(
 	return response.body as IDataObject;
 }
 
+export async function weclappRequestAll(
+	context: WeclappContext,
+	endpoint: string,
+	qs: IDataObject = {},
+): Promise<IDataObject[]> {
+	const PAGE_SIZE = 1000;
+	const records: IDataObject[] = [];
+	let page = 1;
+
+	while (true) {
+		const result = await weclappRequest(context, 'GET', endpoint, undefined, {
+			...qs,
+			page,
+			pageSize: PAGE_SIZE,
+		});
+		const batch = ((result as IDataObject)?.result as IDataObject[]) ?? [];
+		records.push(...batch);
+		if (batch.length < PAGE_SIZE) break;
+		page++;
+	}
+
+	return records;
+}
+
 export async function weclappBinaryRequest(
 	context: WeclappContext,
 	endpoint: string,

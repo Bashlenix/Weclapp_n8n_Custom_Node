@@ -11,7 +11,7 @@ import {
 	ResourceMapperValue,
 } from 'n8n-workflow';
 
-import { weclappBinaryRequest, weclappRequest } from './transport/request';
+import { weclappBinaryRequest, weclappRequest, weclappRequestAll } from './transport/request';
 import {
 	getByIdFields,
 	operationOptions,
@@ -182,13 +182,10 @@ export class Weclapp implements INodeType {
 				// ── Search ─────────────────────────────────────────────────────────────
 				} else if (operation === 'search') {
 					const customQuery = this.getNodeParameter('customQuery', i, '') as string;
-					const page = this.getNodeParameter('page', i, 1) as number;
-					const pageSize = this.getNodeParameter('pageSize', i, 100) as number;
+					const returnAll = this.getNodeParameter('returnAll', i, false) as boolean;
 					const sort = this.getNodeParameter('sort', i, '-lastModifiedDate') as string;
 
 					const qs: IDataObject = {
-						page,
-						pageSize,
 						sort,
 						...(customQuery ? parseCustomQuery(customQuery) : {}),
 					};
@@ -201,8 +198,15 @@ export class Weclapp implements INodeType {
 						if (entityId) qs.entityId = entityId;
 					}
 
-					const result = await weclappRequest(this, 'GET', `/${resource}`, undefined, qs);
-					const records = ((result as IDataObject)?.result as IDataObject[]) ?? [];
+					let records: IDataObject[];
+					if (returnAll) {
+						records = await weclappRequestAll(this, `/${resource}`, qs);
+					} else {
+						const page = this.getNodeParameter('page', i, 1) as number;
+						const pageSize = this.getNodeParameter('pageSize', i, 100) as number;
+						const result = await weclappRequest(this, 'GET', `/${resource}`, undefined, { ...qs, page, pageSize });
+						records = ((result as IDataObject)?.result as IDataObject[]) ?? [];
+					}
 
 					for (const record of records) {
 						returnData.push({ json: record, pairedItem: { item: i } });

@@ -85,6 +85,18 @@ export const getByIdFields: INodeProperties[] = [
 
 export const searchFields: INodeProperties[] = [
 	{
+		displayName: 'Return All',
+		name: 'returnAll',
+		type: 'boolean',
+		default: false,
+		displayOptions: {
+			show: {
+				operation: ['search'],
+			},
+		},
+		description: 'Whether to fetch all pages automatically. When enabled, Page and Page Size are ignored and all matching records are returned.',
+	},
+	{
 		displayName: 'Custom Query',
 		name: 'customQuery',
 		type: 'string',
@@ -110,6 +122,7 @@ export const searchFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				operation: ['search'],
+				returnAll: [false],
 			},
 		},
 	},
@@ -122,6 +135,7 @@ export const searchFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				operation: ['search'],
+				returnAll: [false],
 			},
 		},
 	},
