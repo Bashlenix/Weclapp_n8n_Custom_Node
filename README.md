@@ -148,7 +148,7 @@ Common operators:
 
 Timestamps are Unix milliseconds (e.g. `1700000000000`).
 
-See the [Weclapp API documentation](https://www.weclapp.com/api/documentation) for the full list of filterable fields per entity.
+See the [Weclapp API documentation](https://www.weclapp.com/api/) for the full list of filterable fields per entity.
 
 ## License
 
