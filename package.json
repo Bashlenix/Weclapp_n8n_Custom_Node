@@ -14,7 +14,7 @@
   },
   "license": "MIT",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && find nodes -name '*.svg' | while read f; do cp \"$f\" \"dist/${f}\"; done",
     "dev": "tsc --watch",
     "lint": "eslint . --ext .ts",
     "test": "jest --passWithNoTests"

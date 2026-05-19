@@ -96,7 +96,7 @@ export class Weclapp implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Weclapp',
 		name: 'weclapp',
-		icon: 'fa:plug',
+		icon: 'file:weclapp.svg',
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',

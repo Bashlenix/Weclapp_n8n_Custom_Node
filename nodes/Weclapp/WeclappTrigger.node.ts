@@ -165,7 +165,7 @@ export class WeclappTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Weclapp Trigger',
 		name: 'weclappTrigger',
-		icon: 'fa:plug',
+		icon: 'file:weclapp.svg',
 		group: ['trigger'],
 		version: 1,
 		description: 'Starts the workflow when a Weclapp event occurs',
