@@ -18,7 +18,7 @@
   },
   "license": "MIT",
   "scripts": {
-    "build": "tsc && find nodes -name '*.svg' | while read f; do cp \"$f\" \"dist/${f}\"; done",
+    "build": "tsc && find nodes \\( -name '*.svg' -o -name '*.node.json' \\) | while read f; do cp \"$f\" \"dist/${f}\"; done",
     "dev": "tsc --watch",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
