@@ -43,8 +43,12 @@ Performs CRUD operations on the following Weclapp resources:
 | Purchase Invoice | ✓ | ✓ | ✓ | ✓ | |
 | Incoming Goods | ✓ | ✓ | ✓ | ✓ | |
 | Comment | ✓ | ✓ | ✓ | ✓ | |
+| Currency | ✓ | ✓ | ✓ | ✓ | |
 | Document | | ✓ | ✓ | | ✓ |
+| Manufacturer | ✓ | ✓ | ✓ | ✓ | |
 | Accounting Transaction | | ✓ | ✓ | | |
+| Variant Article | ✓ | ✓ | ✓ | ✓ | |
+| Warehouse Stock | | ✓ | ✓ | | |
 | Warehouse Stock Movement | | ✓ | ✓ | | |
 | User | ✓ | ✓ | ✓ | ✓ | |
 
@@ -110,7 +114,7 @@ Downloads a Weclapp document as a binary file (available for the **Document** re
 Starts a workflow automatically whenever a Weclapp entity is created, updated, or deleted. It registers a webhook in Weclapp on activation and removes it on deactivation — no manual webhook setup required.
 
 **Configuration:**
-- **Resource** — the entity type to watch (same list as the main node).
+- **Resource** — the entity type to watch. Supports all writable resources: Party, Article, Article Category, Sales Order, Quotation, Sales Invoice, Sales Open Item, Shipment, Purchase Order, Purchase Invoice, Incoming Goods, Comment, Currency, Document, Manufacturer, Variant Article, Accounting Transaction, and more.
 - **Events** — one or more of `Created`, `Updated`, `Deleted`.
 
 **Example — notify Slack when a new sales order arrives:**
