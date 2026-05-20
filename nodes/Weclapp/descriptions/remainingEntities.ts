@@ -471,13 +471,114 @@ export const userCreateUpdateFields: INodeProperties[] = [
 	buildCustomAttributesField('user'),
 ];
 
+// ─── Currency ─────────────────────────────────────────────────────────────────
+// Create requires: name
+
+const ALL_CURRENCY_OPTIONS: INodeProperties[] = [
+	{ displayName: 'Name', name: 'name', type: 'string', default: '', description: 'Required on create.' },
+	{ displayName: 'Currency Symbol', name: 'currencySymbol', type: 'string', default: '' },
+];
+
+export const currencyCreateUpdateFields: INodeProperties[] = [
+	{
+		displayName: 'Fields',
+		name: 'createFields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
+		displayOptions: { show: { resource: ['currency'], operation: ['create'] } },
+		options: ALL_CURRENCY_OPTIONS,
+	},
+	{
+		displayName: 'Fields to Update',
+		name: 'updateFields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
+		displayOptions: { show: { resource: ['currency'], operation: ['update'] } },
+		options: ALL_CURRENCY_OPTIONS,
+	},
+	buildCustomAttributesField('currency'),
+];
+
+// ─── Manufacturer ─────────────────────────────────────────────────────────────
+// Create requires: name, active
+
+const ALL_MANUFACTURER_OPTIONS: INodeProperties[] = [
+	{ displayName: 'Name', name: 'name', type: 'string', default: '', description: 'Required on create.' },
+	{ displayName: 'Active', name: 'active', type: 'boolean', default: true, description: 'Required on create.' },
+	{ displayName: 'Email', name: 'email', type: 'string', default: '' },
+];
+
+export const manufacturerCreateUpdateFields: INodeProperties[] = [
+	{
+		displayName: 'Fields',
+		name: 'createFields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
+		displayOptions: { show: { resource: ['manufacturer'], operation: ['create'] } },
+		options: ALL_MANUFACTURER_OPTIONS,
+	},
+	{
+		displayName: 'Fields to Update',
+		name: 'updateFields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
+		displayOptions: { show: { resource: ['manufacturer'], operation: ['update'] } },
+		options: ALL_MANUFACTURER_OPTIONS,
+	},
+	buildCustomAttributesField('manufacturer'),
+];
+
+// ─── Variant Article ──────────────────────────────────────────────────────────
+// Create requires: variantArticleNumber
+
+const ALL_VARIANT_ARTICLE_OPTIONS: INodeProperties[] = [
+	{
+		displayName: 'Variant Article Number',
+		name: 'variantArticleNumber',
+		type: 'string',
+		default: '',
+		description: 'Required on create.',
+	},
+	{ displayName: 'Variant Article Name', name: 'variantArticleName', type: 'string', default: '' },
+	{ displayName: 'Primary Article ID', name: 'primaryArticleId', type: 'string', default: '' },
+];
+
+export const variantArticleCreateUpdateFields: INodeProperties[] = [
+	{
+		displayName: 'Fields',
+		name: 'createFields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
+		displayOptions: { show: { resource: ['variantArticle'], operation: ['create'] } },
+		options: ALL_VARIANT_ARTICLE_OPTIONS,
+	},
+	{
+		displayName: 'Fields to Update',
+		name: 'updateFields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
+		displayOptions: { show: { resource: ['variantArticle'], operation: ['update'] } },
+		options: ALL_VARIANT_ARTICLE_OPTIONS,
+	},
+	buildCustomAttributesField('variantArticle'),
+];
+
 // ─── Date fields for epoch-ms conversion ─────────────────────────────────────
 
 export const OTHER_ENTITY_DATE_FIELDS: Record<string, string[]> = {
 	article: ['launchDate', 'sellByDate', 'sellFromDate', 'supportUntilDate'],
 	articleCategory: [],
 	comment: [],
+	currency: [],
+	manufacturer: [],
 	user: ['birthDate'],
+	variantArticle: [],
 };
 
 export const OTHER_ENTITY_RESOURCES = Object.keys(OTHER_ENTITY_DATE_FIELDS);

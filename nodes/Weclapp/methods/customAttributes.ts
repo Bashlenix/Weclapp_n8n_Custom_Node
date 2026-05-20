@@ -272,6 +272,27 @@ export async function getCustomAttributesForUser(
 	return { fields: attrs.map(attributeDefinitionToResourceField) };
 }
 
+export async function getCustomAttributesForCurrency(
+	this: ILoadOptionsFunctions,
+): Promise<ResourceMapperFields> {
+	const attrs = await getCustomAttributesForEntity(this, 'currency');
+	return { fields: attrs.map(attributeDefinitionToResourceField) };
+}
+
+export async function getCustomAttributesForManufacturer(
+	this: ILoadOptionsFunctions,
+): Promise<ResourceMapperFields> {
+	const attrs = await getCustomAttributesForEntity(this, 'manufacturer');
+	return { fields: attrs.map(attributeDefinitionToResourceField) };
+}
+
+export async function getCustomAttributesForVariantArticle(
+	this: ILoadOptionsFunctions,
+): Promise<ResourceMapperFields> {
+	const attrs = await getCustomAttributesForEntity(this, 'variantArticle');
+	return { fields: attrs.map(attributeDefinitionToResourceField) };
+}
+
 /**
  * Converts a resourceMapper value (from getNodeParameter) into the Weclapp customAttributes
  * array format expected by POST /party and PUT /party/id/{id}.

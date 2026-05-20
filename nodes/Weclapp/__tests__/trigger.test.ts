@@ -42,14 +42,17 @@ describe('WeclappTrigger', () => {
 	beforeEach(() => jest.clearAllMocks());
 
 	describe('description', () => {
-		it('has all 14 Phase-1 resource options', () => {
+		it('has all resource options including currency, manufacturer, and variantArticle', () => {
 			const values = trigger.description.properties
 				.find((p) => p.name === 'resource')
 				?.options?.map((o) => (o as { value: string }).value);
-			expect(values).toHaveLength(14);
+			expect(values).toHaveLength(17);
 			expect(values).toContain('party');
 			expect(values).toContain('salesOrder');
 			expect(values).toContain('accountingTransaction');
+			expect(values).toContain('currency');
+			expect(values).toContain('manufacturer');
+			expect(values).toContain('variantArticle');
 		});
 
 		it('has events multiOptions with Created, Updated, Deleted', () => {

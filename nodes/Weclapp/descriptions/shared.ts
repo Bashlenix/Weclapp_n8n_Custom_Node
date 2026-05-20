@@ -11,8 +11,10 @@ export const resourceOptions: INodeProperties = {
 		{ name: 'Article', value: 'article' },
 		{ name: 'Article Category', value: 'articleCategory' },
 		{ name: 'Comment', value: 'comment' },
+		{ name: 'Currency', value: 'currency' },
 		{ name: 'Document', value: 'document' },
 		{ name: 'Incoming Goods', value: 'incomingGoods' },
+		{ name: 'Manufacturer', value: 'manufacturer' },
 		{ name: 'Party (Customer / Contact)', value: 'party' },
 		{ name: 'Purchase Invoice', value: 'purchaseInvoice' },
 		{ name: 'Purchase Order', value: 'purchaseOrder' },
@@ -22,12 +24,14 @@ export const resourceOptions: INodeProperties = {
 		{ name: 'Sales Order', value: 'salesOrder' },
 		{ name: 'Shipment', value: 'shipment' },
 		{ name: 'User', value: 'user' },
+		{ name: 'Variant Article', value: 'variantArticle' },
+		{ name: 'Warehouse Stock', value: 'warehouseStock' },
 		{ name: 'Warehouse Stock Movement', value: 'warehouseStockMovement' },
 	],
 };
 
 // Read-only resources that do not support Create or Update
-export const READ_ONLY_RESOURCES = ['document', 'accountingTransaction', 'warehouseStockMovement'];
+export const READ_ONLY_RESOURCES = ['document', 'accountingTransaction', 'warehouseStock', 'warehouseStockMovement'];
 
 export const operationOptions: INodeProperties = {
 	displayName: 'Operation',

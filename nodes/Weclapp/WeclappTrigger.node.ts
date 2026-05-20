@@ -159,6 +159,27 @@ const ENTITY_HINTS: NodeHint[] = [
 			fc('description'), fc('recordComment'), fc('version'),
 		].join(', '),
 	),
+	fieldHint(
+		'currency',
+		'Currency',
+		[fc('id'), fc('name'), fc('currencySymbol'), fc('createdDate'), fc('lastModifiedDate')].join(', '),
+	),
+	fieldHint(
+		'manufacturer',
+		'Manufacturer',
+		[
+			fc('id'), fc('name'), fc('active'), fc('email'),
+			fc('createdDate'), fc('lastModifiedDate'), fc('version'),
+		].join(', '),
+	),
+	fieldHint(
+		'variantArticle',
+		'Variant Article',
+		[
+			fc('id'), fc('variantArticleNumber'), fc('variantArticleName'), fc('primaryArticleId'),
+			fc('createdDate'), fc('lastModifiedDate'), fc('version'),
+		].join(', '),
+	),
 ];
 
 export class WeclappTrigger implements INodeType {
@@ -200,8 +221,10 @@ export class WeclappTrigger implements INodeType {
 					{ name: 'Article', value: 'article' },
 					{ name: 'Article Category', value: 'articleCategory' },
 					{ name: 'Comment', value: 'comment' },
+					{ name: 'Currency', value: 'currency' },
 					{ name: 'Document', value: 'document' },
 					{ name: 'Incoming Goods', value: 'incomingGoods' },
+					{ name: 'Manufacturer', value: 'manufacturer' },
 					{ name: 'Party (Customer / Contact)', value: 'party' },
 					{ name: 'Purchase Invoice', value: 'purchaseInvoice' },
 					{ name: 'Purchase Order', value: 'purchaseOrder' },
@@ -210,6 +233,7 @@ export class WeclappTrigger implements INodeType {
 					{ name: 'Sales Open Item', value: 'salesOpenItem' },
 					{ name: 'Sales Order', value: 'salesOrder' },
 					{ name: 'Shipment', value: 'shipment' },
+					{ name: 'Variant Article', value: 'variantArticle' },
 				],
 				default: 'party',
 				description: 'The Weclapp entity type to watch',

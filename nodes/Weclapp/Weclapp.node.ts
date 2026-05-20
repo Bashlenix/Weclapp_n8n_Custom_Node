@@ -40,10 +40,13 @@ import {
 	articleCategoryCreateUpdateFields,
 	articleCreateUpdateFields,
 	commentCreateUpdateFields,
+	currencyCreateUpdateFields,
 	entitySearchFilterFields,
+	manufacturerCreateUpdateFields,
 	OTHER_ENTITY_DATE_FIELDS,
 	OTHER_ENTITY_RESOURCES,
 	userCreateUpdateFields,
+	variantArticleCreateUpdateFields,
 } from './descriptions/remainingEntities';
 import * as loadOptionsMethods from './methods/loadOptions';
 import {
@@ -52,8 +55,10 @@ import {
 	getCustomAttributesForArticle,
 	getCustomAttributesForArticleCategory,
 	getCustomAttributesForComment,
+	getCustomAttributesForCurrency,
 	getCustomAttributesForDocument,
 	getCustomAttributesForIncomingGoods,
+	getCustomAttributesForManufacturer,
 	getCustomAttributesForParty,
 	getCustomAttributesForPurchaseInvoice,
 	getCustomAttributesForPurchaseOrder,
@@ -63,6 +68,7 @@ import {
 	getCustomAttributesForSalesOrder,
 	getCustomAttributesForShipment,
 	getCustomAttributesForUser,
+	getCustomAttributesForVariantArticle,
 } from './methods/customAttributes';
 
 function convertDateFieldsToMs(body: IDataObject, resource: string): void {
@@ -131,7 +137,10 @@ export class Weclapp implements INodeType {
 			...articleCreateUpdateFields,
 			...articleCategoryCreateUpdateFields,
 			...commentCreateUpdateFields,
+			...currencyCreateUpdateFields,
+			...manufacturerCreateUpdateFields,
 			...userCreateUpdateFields,
+			...variantArticleCreateUpdateFields,
 		],
 	};
 
@@ -153,6 +162,9 @@ export class Weclapp implements INodeType {
 			getCustomAttributesForDocument: getCustomAttributesForDocument as (this: ILoadOptionsFunctions) => Promise<ResourceMapperFields>,
 			getCustomAttributesForAccountingTransaction: getCustomAttributesForAccountingTransaction as (this: ILoadOptionsFunctions) => Promise<ResourceMapperFields>,
 			getCustomAttributesForUser: getCustomAttributesForUser as (this: ILoadOptionsFunctions) => Promise<ResourceMapperFields>,
+			getCustomAttributesForCurrency: getCustomAttributesForCurrency as (this: ILoadOptionsFunctions) => Promise<ResourceMapperFields>,
+			getCustomAttributesForManufacturer: getCustomAttributesForManufacturer as (this: ILoadOptionsFunctions) => Promise<ResourceMapperFields>,
+			getCustomAttributesForVariantArticle: getCustomAttributesForVariantArticle as (this: ILoadOptionsFunctions) => Promise<ResourceMapperFields>,
 		},
 	};
 
