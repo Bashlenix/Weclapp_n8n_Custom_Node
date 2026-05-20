@@ -14,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Bashlenix/Weclapp_n8n_Custom_Node.git"
+    "url": "git+https://github.com/Bashlenix/Weclapp_n8n_Custom_Node.git"
   },
   "license": "MIT",
   "scripts": {
