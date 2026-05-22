@@ -89,6 +89,8 @@ n8n-nodes-[service]/
 
 > See `PUBLISHING_GUIDE.md` for everything needed after the node is built — npm setup, GitHub Actions, and n8n verification.
 
+> See `FLOWS_NAMING_CONVENTIONS.md` ONLY when you're asked to build a flow for everything needed for naming the flow.
+
 
 ## Useful n8n Links:
 [Docker Installation: ](https://docs.n8n.io/hosting/installation/docker/#prerequisites)

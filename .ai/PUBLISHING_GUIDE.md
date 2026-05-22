@@ -340,3 +340,7 @@ dist/
 .venv/
 .DS_Store
 ```
+
+## Useful Links:
+[Submit community nodes: ](https://docs.n8n.io/integrations/creating-nodes/deploy/submit-community-nodes)
+[Creator Portal: ](https://creators.n8n.io/nodes/n8n-nodes-weclapp/integration)
