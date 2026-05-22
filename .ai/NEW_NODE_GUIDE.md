@@ -88,3 +88,16 @@ n8n-nodes-[service]/
 ```
 
 > See `PUBLISHING_GUIDE.md` for everything needed after the node is built — npm setup, GitHub Actions, and n8n verification.
+
+
+## Useful n8n Links:
+[Docker Installation: ](https://docs.n8n.io/hosting/installation/docker/#prerequisites)
+[Install private nodes: ](https://docs.n8n.io/integrations/creating-nodes/deploy/install-private-nodes)
+[Submit community nodes: ](https://docs.n8n.io/integrations/creating-nodes/deploy/submit-community-nodes)
+[Creator Portal: ](https://creators.n8n.io/nodes/n8n-nodes-weclapp/integration)
+[SSL Error when using HTTP node: ](https://community.n8n.io/t/ssl-error-when-using-http-node/29928/4)
+**ERROR**: SSL Issue: consider using the ‘Ignore SSL issues’ option
+write EPROTO 384B3317447F0000:error:0A000438:SSL routines:ssl3_read_bytes:tlsv1 alert internal error:…/deps/openssl/openssl/ssl/record/rec_layer_s3.c:1586:SSL alert number 80
+
+**Potential Solution:**
+Remove the Host header from your HTTP Request and let me know if that works? I have a feeling it might solve the problem.
