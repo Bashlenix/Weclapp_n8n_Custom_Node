@@ -11,7 +11,13 @@ import {
 	ResourceMapperValue,
 } from 'n8n-workflow';
 
-import { weclappBinaryRequest, weclappRequest, weclappRequestAll } from './transport/request';
+import {
+	appendQuery,
+	QueryParamPairs,
+	weclappBinaryRequest,
+	weclappRequest,
+	weclappRequestAll,
+} from './transport/request';
 import {
 	getByIdFields,
 	operationOptions,
@@ -86,16 +92,16 @@ function convertDateFieldsToMs(body: IDataObject, resource: string): void {
 	}
 }
 
-function parseCustomQuery(raw: string): IDataObject {
-	const params: IDataObject = {};
+function parseCustomQuery(raw: string): QueryParamPairs {
+	const pairs: QueryParamPairs = [];
 	for (const pair of raw.split('&')) {
 		const eqIdx = pair.indexOf('=');
 		if (eqIdx === -1) continue;
 		const key = pair.slice(0, eqIdx).trim();
 		const value = pair.slice(eqIdx + 1).trim();
-		if (key) params[key] = value;
+		if (key) pairs.push([key, value]);
 	}
-	return params;
+	return pairs;
 }
 
 export class Weclapp implements INodeType {
@@ -197,26 +203,26 @@ export class Weclapp implements INodeType {
 					const returnAll = this.getNodeParameter('returnAll', i, false) as boolean;
 					const sort = this.getNodeParameter('sort', i, '-lastModifiedDate') as string;
 
-					const qs: IDataObject = {
-						sort,
-						...(customQuery ? parseCustomQuery(customQuery) : {}),
-					};
+					const pairs: QueryParamPairs = [];
+					if (sort) pairs.push(['sort', sort]);
+					if (customQuery) pairs.push(...parseCustomQuery(customQuery));
 
 					// comment and document require entityName + entityId as search params
 					if (resource === 'comment' || resource === 'document') {
 						const entityName = this.getNodeParameter('entityName', i, '') as string;
 						const entityId = this.getNodeParameter('entityId', i, '') as string;
-						if (entityName) qs.entityName = entityName;
-						if (entityId) qs.entityId = entityId;
+						if (entityName) pairs.push(['entityName', entityName]);
+						if (entityId) pairs.push(['entityId', entityId]);
 					}
 
 					let records: IDataObject[];
 					if (returnAll) {
-						records = await weclappRequestAll(this, `/${resource}`, qs);
+						records = await weclappRequestAll(this, `/${resource}`, pairs);
 					} else {
 						const page = this.getNodeParameter('page', i, 1) as number;
 						const pageSize = this.getNodeParameter('pageSize', i, 100) as number;
-						const result = await weclappRequest(this, 'GET', `/${resource}`, undefined, { ...qs, page, pageSize });
+						const endpoint = appendQuery(`/${resource}`, [...pairs, ['page', page], ['pageSize', pageSize]]);
+						const result = await weclappRequest(this, 'GET', endpoint);
 						records = ((result as IDataObject)?.result as IDataObject[]) ?? [];
 					}
 

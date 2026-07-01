@@ -68,7 +68,7 @@ Fetches a single record by its Weclapp internal ID.
 Returns a list of records, with optional filtering, sorting, and pagination.
 
 **Fields:**
-- **Custom Query** — Weclapp filter syntax, e.g. `salesChannel-eq=NET1&createdDate-gt=1700000000000`. Multiple conditions are ANDed.
+- **Custom Query** — Weclapp filter syntax, e.g. `salesChannel-eq=NET1&createdDate-gt=1700000000000`. Multiple conditions are ANDed by default; use `or-`/`orGroupN-` prefixes for OR logic (see [Weclapp Query Syntax](#weclapp-query-syntax)).
 - **Sort** — field name, prefix with `-` for descending, e.g. `-lastModifiedDate`.
 - **Return All** — when enabled, fetches every page automatically. When disabled, use **Page** and **Page Size** to paginate manually.
 
@@ -151,6 +151,24 @@ Common operators:
 | `null` | field is null (`true`/`false`) |
 
 Timestamps are Unix milliseconds (e.g. `1700000000000`).
+
+### OR conditions
+
+By default, multiple conditions are combined with AND. To combine conditions with OR, prefix them with `or-`:
+
+```
+or-name-eq=charlie&or-name-eq=chaplin
+```
+
+To mix AND and OR, assign conditions to numbered groups with `orGroupN-`. Conditions **within the same group** are ORed together, and separate groups are ANDed with each other:
+
+```
+orGroup1-shippingCarrierId-eq=213305372&orGroup1-shippingCarrierId-eq=113291681&orGroup2-status-eq=CANCELLED&orGroup2-status-eq=INCOMING_CANCELLED
+```
+
+This matches records whose carrier is one of the two IDs **and** whose status is `CANCELLED` or `INCOMING_CANCELLED`. Repeating the same key is required and fully supported — every value is sent to Weclapp.
+
+> **Note:** Weclapp only allows filtering on filterable properties; computed `*Name` fields (e.g. `shippingCarrierName`) are generally not filterable in API v2 — filter by the corresponding `*Id` instead. Unknown *filter* properties are silently ignored by Weclapp, but unknown `sort` or `properties` values return an error. When Weclapp rejects a request, the node surfaces its exact message and the offending parameter.
 
 See the [Weclapp API documentation](https://www.weclapp.com/api/) for the full list of filterable fields per entity.
 

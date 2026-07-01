@@ -96,10 +96,12 @@ describe('weclappRequestAll', () => {
 		} as unknown as Parameters<typeof weclappRequest>[0];
 
 		await weclappRequestAll(ctx, '/shipment');
-		const call1Qs = (mockHttpRequest.mock.calls[0][1] as { qs: Record<string, unknown> }).qs;
-		const call2Qs = (mockHttpRequest.mock.calls[1][1] as { qs: Record<string, unknown> }).qs;
-		expect(call1Qs).toMatchObject({ page: 1, pageSize: 1000 });
-		expect(call2Qs).toMatchObject({ page: 2, pageSize: 1000 });
+		const call1Url = (mockHttpRequest.mock.calls[0][1] as { url: string }).url;
+		const call2Url = (mockHttpRequest.mock.calls[1][1] as { url: string }).url;
+		expect(call1Url).toContain('page=1');
+		expect(call1Url).toContain('pageSize=1000');
+		expect(call2Url).toContain('page=2');
+		expect(call2Url).toContain('pageSize=1000');
 	});
 
 	it('returns an empty array when the first page is empty', async () => {
@@ -108,10 +110,24 @@ describe('weclappRequestAll', () => {
 		expect(result).toEqual([]);
 	});
 
-	it('forwards extra qs params to every page request', async () => {
+	it('forwards extra query params to every page request', async () => {
 		const { ctx, mockHttpRequest } = makeContext({ statusCode: 200, body: { result: [{ id: '1' }] } });
-		await weclappRequestAll(ctx, '/shipment', { sort: '-createdDate', 'status-eq': 'SENT' });
-		const qs = (mockHttpRequest.mock.calls[0][1] as { qs: Record<string, unknown> }).qs;
-		expect(qs).toMatchObject({ sort: '-createdDate', 'status-eq': 'SENT', page: 1, pageSize: 1000 });
+		await weclappRequestAll(ctx, '/shipment', [['sort', '-createdDate'], ['status-eq', 'SENT']]);
+		const url = (mockHttpRequest.mock.calls[0][1] as { url: string }).url;
+		expect(url).toContain('sort=-createdDate');
+		expect(url).toContain('status-eq=SENT');
+		expect(url).toContain('page=1');
+		expect(url).toContain('pageSize=1000');
+	});
+
+	it('preserves duplicate keys for OR groups', async () => {
+		const { ctx, mockHttpRequest } = makeContext({ statusCode: 200, body: { result: [{ id: '1' }] } });
+		await weclappRequestAll(ctx, '/shipment', [
+			['orGroup1-status-eq', 'CANCELLED'],
+			['orGroup1-status-eq', 'INCOMING_CANCELLED'],
+		]);
+		const url = (mockHttpRequest.mock.calls[0][1] as { url: string }).url;
+		expect(url).toContain('orGroup1-status-eq=CANCELLED');
+		expect(url).toContain('orGroup1-status-eq=INCOMING_CANCELLED');
 	});
 });
