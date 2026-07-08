@@ -69,9 +69,24 @@ function weclappErrorOptions(
 	statusCode: number,
 ): { httpCode: string; message?: string; description?: string } {
 	const httpCode = String(statusCode);
-	if (!body || typeof body !== 'object') return { httpCode };
 
-	const b = body as IDataObject;
+	// weclapp may return text/plain error bodies (see API docs), which n8n does
+	// not JSON-parse. Try to parse a string body as JSON first; if that fails,
+	// use the raw plain-text string as the message so the real cause is shown.
+	let parsed: unknown = body;
+	if (typeof body === 'string') {
+		const trimmed = body.trim();
+		if (!trimmed) return { httpCode };
+		try {
+			parsed = JSON.parse(trimmed);
+		} catch {
+			return { httpCode, message: `weclapp: ${trimmed}` };
+		}
+	}
+
+	if (!parsed || typeof parsed !== 'object') return { httpCode };
+
+	const b = parsed as IDataObject;
 	const main =
 		(typeof b.detail === 'string' && b.detail) ||
 		(typeof b.title === 'string' && b.title) ||
@@ -95,10 +110,14 @@ function weclappErrorOptions(
 			.join('; ');
 	}
 
+	// weclapp often leaves the top-level RFC 7807 fields empty and only fills
+	// validationErrors. Fall back to those so the message isn't the generic one.
+	const message = main || description;
+
 	return {
 		httpCode,
-		...(main ? { message: `weclapp: ${main}` } : {}),
-		...(description ? { description } : {}),
+		...(message ? { message: `weclapp: ${message}` } : {}),
+		...(main && description ? { description } : {}),
 	};
 }
 

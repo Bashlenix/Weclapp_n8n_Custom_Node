@@ -37,6 +37,43 @@ describe('weclappRequest', () => {
 		await expect(weclappRequest(ctx, 'POST', '/party', { name: 'Test' })).rejects.toBeInstanceOf(NodeApiError);
 	});
 
+	it('surfaces a text/plain error body as the message', async () => {
+		const { ctx } = makeContext({
+			statusCode: 400,
+			body: 'unknown property: shippingCarrierName',
+		});
+		await expect(
+			weclappRequest(ctx, 'GET', '/shipment?properties=shippingCarrierName'),
+		).rejects.toMatchObject({
+			message: expect.stringContaining('unknown property: shippingCarrierName'),
+		});
+	});
+
+	it('parses a stringified JSON error body', async () => {
+		const { ctx } = makeContext({
+			statusCode: 400,
+			body: JSON.stringify({ detail: 'customer not found' }),
+		});
+		await expect(weclappRequest(ctx, 'POST', '/salesOrder', { x: 1 })).rejects.toMatchObject({
+			message: expect.stringContaining('customer not found'),
+		});
+	});
+
+	it('falls back to validationErrors when top-level fields are empty', async () => {
+		const { ctx } = makeContext({
+			statusCode: 400,
+			body: {
+				status: 400,
+				validationErrors: [
+					{ location: 'shippingCarrierName', detail: 'unknown property' },
+				],
+			},
+		});
+		await expect(weclappRequest(ctx, 'GET', '/shipment')).rejects.toMatchObject({
+			message: expect.stringContaining('shippingCarrierName: unknown property'),
+		});
+	});
+
 	it('includes Content-Type when a non-empty body is provided', async () => {
 		const { ctx, mockHttpRequest } = makeContext();
 		await weclappRequest(ctx, 'POST', '/party', { name: 'Test' });
