@@ -57,7 +57,8 @@ describe('weclappRequestAll', () => {
 		const records = [{ id: '1' }, { id: '2' }];
 		const { ctx } = makeContext({ statusCode: 200, body: { result: records } });
 		const result = await weclappRequestAll(ctx, '/shipment');
-		expect(result).toEqual(records);
+		expect(result.records).toEqual(records);
+		expect(result.referencedEntities).toBeUndefined();
 	});
 
 	it('fetches multiple pages until a short page is received', async () => {
@@ -76,7 +77,7 @@ describe('weclappRequestAll', () => {
 		} as unknown as Parameters<typeof weclappRequest>[0];
 
 		const result = await weclappRequestAll(ctx, '/shipment');
-		expect(result).toHaveLength(1002);
+		expect(result.records).toHaveLength(1002);
 		expect(mockHttpRequest).toHaveBeenCalledTimes(2);
 	});
 
@@ -107,7 +108,7 @@ describe('weclappRequestAll', () => {
 	it('returns an empty array when the first page is empty', async () => {
 		const { ctx } = makeContext({ statusCode: 200, body: { result: [] } });
 		const result = await weclappRequestAll(ctx, '/shipment');
-		expect(result).toEqual([]);
+		expect(result.records).toEqual([]);
 	});
 
 	it('forwards extra query params to every page request', async () => {
@@ -118,6 +119,37 @@ describe('weclappRequestAll', () => {
 		expect(url).toContain('status-eq=SENT');
 		expect(url).toContain('page=1');
 		expect(url).toContain('pageSize=1000');
+	});
+
+	it('collects and de-duplicates referencedEntities across pages', async () => {
+		const page1 = Array.from({ length: 1000 }, (_, i) => ({ id: String(i) }));
+		const page2 = [{ id: '1000' }];
+		const mockHttpRequest = jest.fn()
+			.mockResolvedValueOnce({
+				statusCode: 200,
+				body: { result: page1, referencedEntities: { unit: [{ id: 'u1', name: 'Stk.' }] } },
+			})
+			.mockResolvedValueOnce({
+				statusCode: 200,
+				body: {
+					result: page2,
+					referencedEntities: { unit: [{ id: 'u1', name: 'Stk.' }, { id: 'u2', name: 'kg' }] },
+				},
+			});
+		const ctx = {
+			getCredentials: jest.fn().mockResolvedValue({ subdomain: 'acme' }),
+			helpers: { httpRequestWithAuthentication: mockHttpRequest },
+			getNode: jest.fn().mockReturnValue({
+				id: 'n1', name: 'Weclapp', type: 'Weclapp', typeVersion: 1,
+				position: [0, 0] as [number, number], parameters: {},
+			}),
+		} as unknown as Parameters<typeof weclappRequest>[0];
+
+		const result = await weclappRequestAll(ctx, '/article');
+		expect(result.records).toHaveLength(1001);
+		expect(result.referencedEntities).toEqual({
+			unit: [{ id: 'u1', name: 'Stk.' }, { id: 'u2', name: 'kg' }],
+		});
 	});
 
 	it('preserves duplicate keys for OR groups', async () => {

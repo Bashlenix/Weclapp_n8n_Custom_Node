@@ -216,18 +216,36 @@ export class Weclapp implements INodeType {
 					}
 
 					let records: IDataObject[];
+					// weclapp returns `referencedEntities` as a top-level sibling of
+					// `result` when the query includes `includeReferencedEntities`.
+					let referencedEntities: IDataObject | undefined;
 					if (returnAll) {
-						records = await weclappRequestAll(this, `/${resource}`, pairs);
+						const queryResult = await weclappRequestAll(this, `/${resource}`, pairs);
+						records = queryResult.records;
+						referencedEntities = queryResult.referencedEntities;
 					} else {
 						const page = this.getNodeParameter('page', i, 1) as number;
 						const pageSize = this.getNodeParameter('pageSize', i, 100) as number;
 						const endpoint = appendQuery(`/${resource}`, [...pairs, ['page', page], ['pageSize', pageSize]]);
 						const result = await weclappRequest(this, 'GET', endpoint);
 						records = ((result as IDataObject)?.result as IDataObject[]) ?? [];
+						const refs = (result as IDataObject)?.referencedEntities;
+						if (refs && typeof refs === 'object') {
+							referencedEntities = refs as IDataObject;
+						}
 					}
 
 					for (const record of records) {
-						returnData.push({ json: record, pairedItem: { item: i } });
+						returnData.push({
+							json: referencedEntities ? { ...record, referencedEntities } : record,
+							pairedItem: { item: i },
+						});
+					}
+
+					// When the query only returned referenced data (no primary records)
+					// still surface it so it isn't silently dropped.
+					if (records.length === 0 && referencedEntities) {
+						returnData.push({ json: { referencedEntities }, pairedItem: { item: i } });
 					}
 
 				// ── Create ─────────────────────────────────────────────────────────────

@@ -25,6 +25,39 @@ type WeclappContext =
 export type QueryParamPairs = Array<[string, string | number]>;
 
 /**
+ * Result of a paginated query. `referencedEntities` is only present when the
+ * request used `includeReferencedEntities` and weclapp returned the extra
+ * top-level object described in the API docs.
+ */
+export interface WeclappQueryResult {
+	records: IDataObject[];
+	referencedEntities?: IDataObject;
+}
+
+/**
+ * weclapp returns referenced entities as `{ entityName: Entity[] }`. When paging
+ * we accumulate them across pages, de-duplicating by `id` so the same referenced
+ * record isn't repeated.
+ */
+function mergeReferencedEntities(target: IDataObject, source: unknown): void {
+	if (!source || typeof source !== 'object') return;
+	for (const [entityName, entities] of Object.entries(source as IDataObject)) {
+		if (!Array.isArray(entities)) continue;
+		const existing = (target[entityName] as IDataObject[] | undefined) ?? [];
+		const seen = new Set(
+			existing.map((e) => (e as IDataObject).id).filter((id) => id !== undefined),
+		);
+		for (const entity of entities as IDataObject[]) {
+			const id = entity?.id;
+			if (id !== undefined && seen.has(id)) continue;
+			if (id !== undefined) seen.add(id);
+			existing.push(entity);
+		}
+		target[entityName] = existing;
+	}
+}
+
+/**
  * weclapp returns RFC 7807 error bodies (detail / title / validationErrors).
  * n8n's NodeApiError doesn't understand those fields and falls back to a
  * generic "Bad request - please check your parameters" message, hiding the
@@ -139,9 +172,11 @@ export async function weclappRequestAll(
 	context: WeclappContext,
 	endpoint: string,
 	pairs: QueryParamPairs = [],
-): Promise<IDataObject[]> {
+): Promise<WeclappQueryResult> {
 	const PAGE_SIZE = 1000;
 	const records: IDataObject[] = [];
+	const referencedEntities: IDataObject = {};
+	let hasReferencedEntities = false;
 	let page = 1;
 
 	while (true) {
@@ -149,11 +184,21 @@ export async function weclappRequestAll(
 		const result = await weclappRequest(context, 'GET', url);
 		const batch = ((result as IDataObject)?.result as IDataObject[]) ?? [];
 		records.push(...batch);
+
+		const refs = (result as IDataObject)?.referencedEntities;
+		if (refs && typeof refs === 'object') {
+			hasReferencedEntities = true;
+			mergeReferencedEntities(referencedEntities, refs);
+		}
+
 		if (batch.length < PAGE_SIZE) break;
 		page++;
 	}
 
-	return records;
+	return {
+		records,
+		...(hasReferencedEntities ? { referencedEntities } : {}),
+	};
 }
 
 export async function weclappBinaryRequest(

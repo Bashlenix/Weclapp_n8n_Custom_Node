@@ -82,6 +82,29 @@ Returns a list of records, with optional filtering, sorting, and pagination.
 - Resource: `Party (Customer / Contact)`
 - Custom Query: `customerNumber-eq=K10001`
 
+##### Including referenced entities
+
+Weclapp can return referenced records (e.g. the `unit` behind an article's `unitId`) in the same request. Add [`includeReferencedEntities`](https://www.weclapp.com/api/#overview--getting-started) to the **Custom Query** field with a comma-separated list of reference properties:
+
+```
+includeReferencedEntities=unitId,articleCategoryId
+```
+
+The node keeps the `referencedEntities` object Weclapp returns and attaches it to **each** matching record under a `referencedEntities` key, so every item is self-contained. When **Return All** is enabled, referenced entities are merged across pages and de-duplicated by `id`.
+
+**Example output** for `article` with Custom Query `includeReferencedEntities=unitId`:
+
+```json
+{
+  "id": "1001",
+  "articleNumber": "EPM242J",
+  "unitId": "2770",
+  "referencedEntities": {
+    "unit": [ { "id": "2770", "name": "Stk." } ]
+  }
+}
+```
+
 #### Create
 
 Creates a new record. Map the fields you want to set in the **Additional Fields** section using n8n expressions or fixed values.
