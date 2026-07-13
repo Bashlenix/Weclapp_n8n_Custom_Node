@@ -41,9 +41,19 @@ export const operationOptions: INodeProperties = {
 	default: 'getById',
 	options: [
 		{
+			name: 'Count',
+			value: 'count',
+			action: 'Count matching records',
+		},
+		{
 			name: 'Create',
 			value: 'create',
 			action: 'Create a record',
+		},
+		{
+			name: 'Delete',
+			value: 'delete',
+			action: 'Delete a record',
 		},
 		{
 			name: 'Download Document',
@@ -68,6 +78,27 @@ export const operationOptions: INodeProperties = {
 	],
 };
 
+// ── Dry Run ─────────────────────────────────────────────────────────────────
+// weclapp's generic POST/PUT/DELETE endpoints support a `dryRun` query
+// parameter: business logic runs and the payload is validated, but nothing is
+// persisted. On success weclapp returns 200 "ok" instead of the usual result.
+
+export const dryRunField: INodeProperties = {
+	displayName: 'Dry Run',
+	name: 'dryRun',
+	type: 'boolean',
+	default: false,
+	displayOptions: {
+		show: {
+			operation: ['create', 'update', 'delete'],
+		},
+	},
+	description:
+		'Whether to validate the operation without persisting any changes. '
+		+ 'weclapp runs the business logic and validates the payload, but no data '
+		+ 'is written.',
+};
+
 // ── Get by ID ─────────────────────────────────────────────────────────────────
 
 export const getByIdFields: INodeProperties[] = [
@@ -78,7 +109,7 @@ export const getByIdFields: INodeProperties[] = [
 		default: '',
 		displayOptions: {
 			show: {
-				operation: ['getById', 'update', 'downloadDocument'],
+				operation: ['getById', 'update', 'delete', 'downloadDocument'],
 			},
 		},
 		description: 'The Weclapp internal ID of the record',
@@ -107,7 +138,7 @@ export const searchFields: INodeProperties[] = [
 		default: '',
 		displayOptions: {
 			show: {
-				operation: ['search'],
+				operation: ['search', 'count'],
 			},
 		},
 		placeholder: 'customerNumber-eq=K10001&lastModifiedDate-gt=1398436281262',

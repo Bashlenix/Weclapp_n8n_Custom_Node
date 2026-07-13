@@ -19,6 +19,7 @@ import {
 	weclappRequestAll,
 } from './transport/request';
 import {
+	dryRunField,
 	getByIdFields,
 	operationOptions,
 	READ_ONLY_RESOURCES,
@@ -128,6 +129,7 @@ export class Weclapp implements INodeType {
 		properties: [
 			resourceOptions,
 			operationOptions,
+			dryRunField,
 			...getByIdFields,
 			...searchFields,
 			...entitySearchFilterFields,
@@ -181,7 +183,10 @@ export class Weclapp implements INodeType {
 		const resource = this.getNodeParameter('resource', 0) as string;
 		const operation = this.getNodeParameter('operation', 0) as string;
 
-		if (READ_ONLY_RESOURCES.includes(resource) && (operation === 'create' || operation === 'update')) {
+		if (
+			READ_ONLY_RESOURCES.includes(resource) &&
+			(operation === 'create' || operation === 'update' || operation === 'delete')
+		) {
 			throw new NodeOperationError(
 				this.getNode(),
 				`The "${resource}" resource does not support ${operation}.`,
@@ -272,6 +277,29 @@ export class Weclapp implements INodeType {
 						});
 					}
 
+				// ── Count ──────────────────────────────────────────────────────────────
+				} else if (operation === 'count') {
+					const customQuery = this.getNodeParameter('customQuery', i, '') as string;
+
+					const pairs: QueryParamPairs = [];
+					if (customQuery) pairs.push(...parseCustomQuery(customQuery));
+
+					// comment and document require entityName + entityId as filters
+					if (resource === 'comment' || resource === 'document') {
+						const entityName = this.getNodeParameter('entityName', i, '') as string;
+						const entityId = this.getNodeParameter('entityId', i, '') as string;
+						if (entityName) pairs.push(['entityName', entityName]);
+						if (entityId) pairs.push(['entityId', entityId]);
+					}
+
+					const endpoint = appendQuery(`/${resource}/count`, pairs);
+					const result = await weclappRequest(this, 'GET', endpoint);
+					const count = (result as IDataObject)?.result;
+					returnData.push({
+						json: { count: typeof count === 'string' ? Number(count) : count ?? 0 },
+						pairedItem: { item: i },
+					});
+
 				// ── Create ─────────────────────────────────────────────────────────────
 				} else if (operation === 'create') {
 					const body = this.getNodeParameter('createFields', i, {}) as IDataObject;
@@ -286,9 +314,10 @@ export class Weclapp implements INodeType {
 						if (customAttrs.length > 0) body.customAttributes = customAttrs;
 					}
 					convertDateFieldsToMs(body, resource);
-					const result = await weclappRequest(this, 'POST', `/${resource}`, body, {
-						ignoreMissingProperties: true,
-					});
+					const dryRun = this.getNodeParameter('dryRun', i, false) as boolean;
+					const qs: IDataObject = { ignoreMissingProperties: true };
+					if (dryRun) qs.dryRun = true;
+					const result = await weclappRequest(this, 'POST', `/${resource}`, body, qs);
 					returnData.push({ json: result ?? {}, pairedItem: { item: i } });
 
 				// ── Update ─────────────────────────────────────────────────────────────
@@ -307,11 +336,26 @@ export class Weclapp implements INodeType {
 						if (customAttrs.length > 0) body.customAttributes = customAttrs;
 					}
 					convertDateFieldsToMs(body, resource);
+					const dryRun = this.getNodeParameter('dryRun', i, false) as boolean;
+					const qs: IDataObject = { ignoreMissingProperties: true };
+					if (dryRun) qs.dryRun = true;
 					const result = await weclappRequest(
-						this, 'PUT', `/${resource}/id/${encodeURIComponent(id)}`, body,
-						{ ignoreMissingProperties: true },
+						this, 'PUT', `/${resource}/id/${encodeURIComponent(id)}`, body, qs,
 					);
 					returnData.push({ json: result ?? {}, pairedItem: { item: i } });
+
+				// ── Delete ─────────────────────────────────────────────────────────────
+				} else if (operation === 'delete') {
+					const id = this.getNodeParameter('id', i) as string;
+					if (!id) throw new NodeOperationError(this.getNode(), 'Record ID is required for the Delete operation.', { itemIndex: i });
+					const dryRun = this.getNodeParameter('dryRun', i, false) as boolean;
+					const qs: IDataObject = {};
+					if (dryRun) qs.dryRun = true;
+					await weclappRequest(this, 'DELETE', `/${resource}/id/${encodeURIComponent(id)}`, undefined, qs);
+					returnData.push({
+						json: { success: true, id, ...(dryRun ? { dryRun: true } : {}) },
+						pairedItem: { item: i },
+					});
 
 				// ── Download Document ──────────────────────────────────────────────────
 				} else if (operation === 'downloadDocument') {

@@ -370,7 +370,7 @@ export const entitySearchFilterFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['comment'],
-				operation: ['search'],
+				operation: ['search', 'count'],
 			},
 		},
 		description: 'The entity type whose comments to search.',
@@ -385,7 +385,7 @@ export const entitySearchFilterFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['document'],
-				operation: ['search'],
+				operation: ['search', 'count'],
 			},
 		},
 		description: 'The entity type whose documents to search (e.g. salesOrder, purchaseOrder).',
@@ -399,7 +399,7 @@ export const entitySearchFilterFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['comment', 'document'],
-				operation: ['search'],
+				operation: ['search', 'count'],
 			},
 		},
 		description: 'The ID of the entity whose comments/documents to search.',

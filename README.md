@@ -29,28 +29,30 @@ n8n will test the credential automatically against the `/user/count` endpoint.
 
 Performs CRUD operations on the following Weclapp resources:
 
-| Resource | Create | Get by ID | Search | Update | Download |
-|---|:---:|:---:|:---:|:---:|:---:|
-| Party (Customer / Contact) | ✓ | ✓ | ✓ | ✓ | |
-| Article | ✓ | ✓ | ✓ | ✓ | |
-| Article Category | ✓ | ✓ | ✓ | ✓ | |
-| Sales Order | ✓ | ✓ | ✓ | ✓ | |
-| Quotation | ✓ | ✓ | ✓ | ✓ | |
-| Sales Invoice | ✓ | ✓ | ✓ | ✓ | |
-| Sales Open Item | | ✓ | ✓ | | |
-| Shipment | ✓ | ✓ | ✓ | ✓ | |
-| Purchase Order | ✓ | ✓ | ✓ | ✓ | |
-| Purchase Invoice | ✓ | ✓ | ✓ | ✓ | |
-| Incoming Goods | ✓ | ✓ | ✓ | ✓ | |
-| Comment | ✓ | ✓ | ✓ | ✓ | |
-| Currency | ✓ | ✓ | ✓ | ✓ | |
-| Document | | ✓ | ✓ | | ✓ |
-| Manufacturer | ✓ | ✓ | ✓ | ✓ | |
-| Accounting Transaction | | ✓ | ✓ | | |
-| Variant Article | ✓ | ✓ | ✓ | ✓ | |
-| Warehouse Stock | | ✓ | ✓ | | |
-| Warehouse Stock Movement | | ✓ | ✓ | | |
-| User | ✓ | ✓ | ✓ | ✓ | |
+| Resource | Create | Get by ID | Search | Count | Update | Delete | Download |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Party (Customer / Contact) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | |
+| Article | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | |
+| Article Category | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | |
+| Sales Order | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | |
+| Quotation | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | |
+| Sales Invoice | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | |
+| Sales Open Item | | ✓ | ✓ | ✓ | | ✓ | |
+| Shipment | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | |
+| Purchase Order | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | |
+| Purchase Invoice | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | |
+| Incoming Goods | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | |
+| Comment | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | |
+| Currency | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | |
+| Document | | ✓ | ✓ | ✓ | | | ✓ |
+| Manufacturer | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | |
+| Accounting Transaction | | ✓ | ✓ | ✓ | | | |
+| Variant Article | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | |
+| Warehouse Stock | | ✓ | ✓ | ✓ | | | |
+| Warehouse Stock Movement | | ✓ | ✓ | ✓ | | | |
+| User | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | |
+
+> **Read-only resources** — Document, Accounting Transaction, Warehouse Stock, and Warehouse Stock Movement do not support Create, Update, or Delete.
 
 ### Operations
 
@@ -132,6 +134,15 @@ Weclapp returns an `additionalProperties` object where each property holds an ar
 }
 ```
 
+#### Count
+
+Returns the number of records matching an optional filter, without fetching the records themselves. Accepts the same **Custom Query** filter syntax as Search (and the required entity filters for Comment / Document). The output is a single item `{ "count": <number> }`.
+
+**Example — count open sales orders:**
+- Resource: `Sales Order`
+- Operation: `Count`
+- Custom Query: `orderStatusId-eq=OPEN`
+
 #### Create
 
 Creates a new record. Map the fields you want to set in the **Additional Fields** section using n8n expressions or fixed values.
@@ -150,6 +161,19 @@ Updates an existing record by ID. Only the fields you map are sent — unset fie
 - Operation: `Update`
 - Record ID: `{{ $json.id }}`
 - Additional Fields → `status`: `SHIPPED`
+
+#### Delete
+
+Deletes a record by ID (available for writable resources only). Returns `{ "success": true, "id": "<id>" }` on success.
+
+**Example — delete a quotation:**
+- Resource: `Quotation`
+- Operation: `Delete`
+- Record ID: `{{ $json.id }}`
+
+#### Dry Run
+
+Create, Update, and Delete expose a **Dry Run** toggle. When enabled, Weclapp runs its business logic and validates the payload but **persists nothing** — useful for validating input before committing changes. On success the response is returned without meta properties (`id`, `version`, `createdDate`, `lastModifiedDate`).
 
 #### Download Document
 
