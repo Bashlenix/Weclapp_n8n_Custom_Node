@@ -92,7 +92,9 @@ Weclapp can return referenced records (e.g. the `unit` behind an article's `unit
 includeReferencedEntities=unitId,articleCategoryId
 ```
 
-The node keeps the `referencedEntities` object Weclapp returns and attaches it to **each** matching record under a `referencedEntities` key, so every item is self-contained. When **Return All** is enabled, referenced entities are merged across pages and de-duplicated by `id`.
+Weclapp returns a single, de-duplicated `referencedEntities` pool shared across the whole result set — it is **not** aligned to individual records. Rather than attaching that whole pool to every item, the node **resolves each record's foreign keys** against the pool and attaches only the matching entity inline: a field named `<type>Id` is resolved to a single object under `<type>`, and a field named `<type>Ids` to an array under `<type>`. This works for any reference whose base name matches a pool key, so each item carries just its own references. When **Return All** is enabled, the pool is merged across pages and de-duplicated by `id` before resolution.
+
+> **Note:** matching is done by `id`. If you narrow the response with `properties` and use the `entity:prop` selection syntax, include the entity's `id` too (e.g. `unit:id,unit:name`), otherwise the pooled entities have no `id` to match against and nothing will be resolved.
 
 **Example output** for `article` with Custom Query `includeReferencedEntities=unitId`:
 
@@ -101,9 +103,7 @@ The node keeps the `referencedEntities` object Weclapp returns and attaches it t
   "id": "1001",
   "articleNumber": "EPM242J",
   "unitId": "2770",
-  "referencedEntities": {
-    "unit": [ { "id": "2770", "name": "Stk." } ]
-  }
+  "unit": { "id": "2770", "name": "Stk." }
 }
 ```
 

@@ -105,6 +105,50 @@ function parseCustomQuery(raw: string): QueryParamPairs {
 	return pairs;
 }
 
+/**
+ * weclapp's `referencedEntities` is a de-duplicated lookup pool keyed by entity
+ * type (e.g. `shippingCarrier`), shared across the whole result set rather than
+ * aligned to individual records. This builds an `id -> entity` map per type so
+ * each record's foreign keys can be resolved in O(1).
+ */
+function buildReferenceIndex(pool: IDataObject): Map<string, Map<unknown, IDataObject>> {
+	const index = new Map<string, Map<unknown, IDataObject>>();
+	for (const [entityName, entities] of Object.entries(pool)) {
+		if (!Array.isArray(entities)) continue;
+		const byId = new Map<unknown, IDataObject>();
+		for (const entity of entities as IDataObject[]) {
+			if (entity && entity.id !== undefined) byId.set(entity.id, entity);
+		}
+		index.set(entityName, byId);
+	}
+	return index;
+}
+
+/**
+ * Resolves a record's foreign keys against the referenced-entity pool so each
+ * record carries only its own references. A field named `<type>Id` links to a
+ * single entity in the `<type>` pool; a field named `<type>Ids` links to many.
+ * Matched entities are attached inline under `<type>`; unmatched IDs are left
+ * untouched.
+ */
+function resolveReferencedEntities(
+	record: IDataObject,
+	index: Map<string, Map<unknown, IDataObject>>,
+): IDataObject {
+	const resolved: IDataObject = { ...record };
+	for (const [field, value] of Object.entries(record)) {
+		if (field.endsWith('Ids') && Array.isArray(value)) {
+			const byId = index.get(field.slice(0, -3));
+			if (byId) resolved[field.slice(0, -3)] = value.map((id) => byId.get(id) ?? id);
+		} else if (field.endsWith('Id') && (typeof value === 'string' || typeof value === 'number')) {
+			const byId = index.get(field.slice(0, -2));
+			const match = byId?.get(value);
+			if (match) resolved[field.slice(0, -2)] = match;
+		}
+	}
+	return resolved;
+}
+
 export class Weclapp implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Weclapp',
@@ -250,9 +294,17 @@ export class Weclapp implements INodeType {
 						}
 					}
 
+					// Build the id -> entity lookup once per page rather than per record.
+					const refIndex = referencedEntities
+						? buildReferenceIndex(referencedEntities)
+						: undefined;
 					records.forEach((record, idx) => {
-						const json: IDataObject = { ...record };
-						if (referencedEntities) json.referencedEntities = referencedEntities;
+						// Resolve each record's foreign keys against the shared pool so it
+						// carries only its own references (e.g. its own shippingCarrier)
+						// instead of the whole de-duplicated pool.
+						const json: IDataObject = refIndex
+							? resolveReferencedEntities(record, refIndex)
+							: { ...record };
 						// Attach only this record's slice of each additional property,
 						// keyed by index as documented by weclapp.
 						if (additionalProperties) {
