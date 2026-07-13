@@ -114,8 +114,10 @@ export const searchFields: INodeProperties[] = [
 		description:
 			'Filter using Weclapp query syntax. Multiple filters are combined with AND logic. '
 			+ 'Each condition is a key-value pair separated by <code>=</code>; '
-			+ 'pairs are joined with <code>&</code>.',
-		hint: 'Example: <code>salesChannel-eq=NET1&createdDate-gt=1398436281262</code>',
+			+ 'pairs are joined with <code>&</code>. You can also request calculated '
+			+ 'fields with <code>additionalProperties</code> (comma-separated); each returned '
+			+ 'record then includes an <code>additionalProperties</code> object with its values.',
+		hint: 'Examples: <code>salesChannel-eq=NET1&createdDate-gt=1398436281262</code> or <code>additionalProperties=currentSalesPrice</code>',
 	},
 	{
 		displayName: 'Page',

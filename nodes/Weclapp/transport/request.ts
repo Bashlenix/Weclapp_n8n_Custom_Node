@@ -27,11 +27,15 @@ export type QueryParamPairs = Array<[string, string | number]>;
 /**
  * Result of a paginated query. `referencedEntities` is only present when the
  * request used `includeReferencedEntities` and weclapp returned the extra
- * top-level object described in the API docs.
+ * top-level object described in the API docs. `additionalProperties` is only
+ * present when the request used `additionalProperties`; weclapp returns it as
+ * `{ propertyName: value[] }` where each value's index aligns with the entity
+ * at the same index in `records`.
  */
 export interface WeclappQueryResult {
 	records: IDataObject[];
 	referencedEntities?: IDataObject;
+	additionalProperties?: IDataObject;
 }
 
 /**
@@ -54,6 +58,22 @@ function mergeReferencedEntities(target: IDataObject, source: unknown): void {
 			existing.push(entity);
 		}
 		target[entityName] = existing;
+	}
+}
+
+/**
+ * weclapp returns additional properties as `{ propertyName: value[] }`, where
+ * each value's index aligns with the entity at the same index in the page's
+ * `result`. When paging we concatenate the arrays in page order so the combined
+ * arrays stay index-aligned with the combined records.
+ */
+function mergeAdditionalProperties(target: IDataObject, source: unknown): void {
+	if (!source || typeof source !== 'object') return;
+	for (const [propertyName, values] of Object.entries(source as IDataObject)) {
+		if (!Array.isArray(values)) continue;
+		const existing = (target[propertyName] as unknown[] | undefined) ?? [];
+		existing.push(...values);
+		target[propertyName] = existing;
 	}
 }
 
@@ -196,6 +216,8 @@ export async function weclappRequestAll(
 	const records: IDataObject[] = [];
 	const referencedEntities: IDataObject = {};
 	let hasReferencedEntities = false;
+	const additionalProperties: IDataObject = {};
+	let hasAdditionalProperties = false;
 	let page = 1;
 
 	while (true) {
@@ -210,6 +232,12 @@ export async function weclappRequestAll(
 			mergeReferencedEntities(referencedEntities, refs);
 		}
 
+		const addl = (result as IDataObject)?.additionalProperties;
+		if (addl && typeof addl === 'object') {
+			hasAdditionalProperties = true;
+			mergeAdditionalProperties(additionalProperties, addl);
+		}
+
 		if (batch.length < PAGE_SIZE) break;
 		page++;
 	}
@@ -217,6 +245,7 @@ export async function weclappRequestAll(
 	return {
 		records,
 		...(hasReferencedEntities ? { referencedEntities } : {}),
+		...(hasAdditionalProperties ? { additionalProperties } : {}),
 	};
 }
 

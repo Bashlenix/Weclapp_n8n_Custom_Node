@@ -189,6 +189,46 @@ describe('weclappRequestAll', () => {
 		});
 	});
 
+	it('collects and concatenates additionalProperties across pages in order', async () => {
+		const page1 = Array.from({ length: 1000 }, (_, i) => ({ id: String(i) }));
+		const page2 = [{ id: '1000' }];
+		const mockHttpRequest = jest.fn()
+			.mockResolvedValueOnce({
+				statusCode: 200,
+				body: {
+					result: page1,
+					additionalProperties: {
+						currentSalesPrice: page1.map((_, i) => ({ articleUnitPrice: String(i) })),
+					},
+				},
+			})
+			.mockResolvedValueOnce({
+				statusCode: 200,
+				body: {
+					result: page2,
+					additionalProperties: {
+						currentSalesPrice: [{ articleUnitPrice: '1000' }],
+					},
+				},
+			});
+		const ctx = {
+			getCredentials: jest.fn().mockResolvedValue({ subdomain: 'acme' }),
+			helpers: { httpRequestWithAuthentication: mockHttpRequest },
+			getNode: jest.fn().mockReturnValue({
+				id: 'n1', name: 'Weclapp', type: 'Weclapp', typeVersion: 1,
+				position: [0, 0] as [number, number], parameters: {},
+			}),
+		} as unknown as Parameters<typeof weclappRequest>[0];
+
+		const result = await weclappRequestAll(ctx, '/article');
+		expect(result.records).toHaveLength(1001);
+		const prices = result.additionalProperties?.currentSalesPrice as Array<{ articleUnitPrice: string }>;
+		expect(prices).toHaveLength(1001);
+		// Index alignment: the value at index N corresponds to records[N].
+		expect(prices[0]).toEqual({ articleUnitPrice: '0' });
+		expect(prices[1000]).toEqual({ articleUnitPrice: '1000' });
+	});
+
 	it('preserves duplicate keys for OR groups', async () => {
 		const { ctx, mockHttpRequest } = makeContext({ statusCode: 200, body: { result: [{ id: '1' }] } });
 		await weclappRequestAll(ctx, '/shipment', [

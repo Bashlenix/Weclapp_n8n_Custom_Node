@@ -105,6 +105,33 @@ The node keeps the `referencedEntities` object Weclapp returns and attaches it t
 }
 ```
 
+##### Requesting additional properties
+
+Some Weclapp fields are calculated or complexly determined and must be explicitly requested. Add [`additionalProperties`](https://www.weclapp.com/api/#overview--getting-started) to the **Custom Query** field with a comma-separated list of property names:
+
+```
+additionalProperties=currentSalesPrice
+```
+
+Weclapp returns an `additionalProperties` object where each property holds an array whose index aligns with the matching entity. The node maps each record's slice back onto that record under an `additionalProperties` key, so every item carries its own values. When **Return All** is enabled, the arrays are concatenated across pages in order to preserve that alignment.
+
+**Example output** for `article` with Custom Query `additionalProperties=currentSalesPrice`:
+
+```json
+{
+  "id": "1001",
+  "articleNumber": "EPM242J",
+  "additionalProperties": {
+    "currentSalesPrice": {
+      "articleUnitPrice": "39.95",
+      "currencyId": "256",
+      "quantity": "1",
+      "reductionAdditionItems": []
+    }
+  }
+}
+```
+
 #### Create
 
 Creates a new record. Map the fields you want to set in the **Additional Fields** section using n8n expressions or fixed values.

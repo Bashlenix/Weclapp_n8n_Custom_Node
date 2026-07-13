@@ -219,10 +219,16 @@ export class Weclapp implements INodeType {
 					// weclapp returns `referencedEntities` as a top-level sibling of
 					// `result` when the query includes `includeReferencedEntities`.
 					let referencedEntities: IDataObject | undefined;
+					// weclapp returns `additionalProperties` as a top-level sibling of
+					// `result` when the query includes `additionalProperties`. It has the
+					// shape `{ propertyName: value[] }` where each value's index aligns
+					// with the entity at the same index in `result`.
+					let additionalProperties: IDataObject | undefined;
 					if (returnAll) {
 						const queryResult = await weclappRequestAll(this, `/${resource}`, pairs);
 						records = queryResult.records;
 						referencedEntities = queryResult.referencedEntities;
+						additionalProperties = queryResult.additionalProperties;
 					} else {
 						const page = this.getNodeParameter('page', i, 1) as number;
 						const pageSize = this.getNodeParameter('pageSize', i, 100) as number;
@@ -233,19 +239,37 @@ export class Weclapp implements INodeType {
 						if (refs && typeof refs === 'object') {
 							referencedEntities = refs as IDataObject;
 						}
+						const addl = (result as IDataObject)?.additionalProperties;
+						if (addl && typeof addl === 'object') {
+							additionalProperties = addl as IDataObject;
+						}
 					}
 
-					for (const record of records) {
+					records.forEach((record, idx) => {
+						const json: IDataObject = { ...record };
+						if (referencedEntities) json.referencedEntities = referencedEntities;
+						// Attach only this record's slice of each additional property,
+						// keyed by index as documented by weclapp.
+						if (additionalProperties) {
+							const perRecord: IDataObject = {};
+							for (const [propertyName, values] of Object.entries(additionalProperties)) {
+								if (Array.isArray(values)) perRecord[propertyName] = values[idx];
+							}
+							json.additionalProperties = perRecord;
+						}
+						returnData.push({ json, pairedItem: { item: i } });
+					});
+
+					// When the query only returned sibling data (no primary records)
+					// still surface it so it isn't silently dropped.
+					if (records.length === 0 && (referencedEntities || additionalProperties)) {
 						returnData.push({
-							json: referencedEntities ? { ...record, referencedEntities } : record,
+							json: {
+								...(referencedEntities ? { referencedEntities } : {}),
+								...(additionalProperties ? { additionalProperties } : {}),
+							},
 							pairedItem: { item: i },
 						});
-					}
-
-					// When the query only returned referenced data (no primary records)
-					// still surface it so it isn't silently dropped.
-					if (records.length === 0 && referencedEntities) {
-						returnData.push({ json: { referencedEntities }, pairedItem: { item: i } });
 					}
 
 				// ── Create ─────────────────────────────────────────────────────────────
